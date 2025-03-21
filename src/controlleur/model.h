@@ -22,5 +22,9 @@ typedef struct poisson {
 } poisson;
 
 
+void print_poisson(poisson poisson);
+
+
+
 
 #endif

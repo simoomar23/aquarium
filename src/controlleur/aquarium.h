@@ -2,12 +2,18 @@
 #define AQUARIUM
 
 #include "model.h"
+#include "liste.h"
+
+extern aquarium *aquarium;
+
 typedef struct aquarium {
 	int width;
 	int length;
-	poisson * fishs;
+	struct set * fishs;
 } aquarium;
 
+void initialize_aquarium();
+ 
 struct aquarium make_view(int x,int y,int width, int length);
 
 
