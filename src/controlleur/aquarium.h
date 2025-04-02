@@ -12,6 +12,15 @@ typedef struct aquarium {
 	struct set * fishs;
 } aquarium;
 
+struct view {
+	int x;
+	int y;
+	int width;
+	int length;
+};
+
+
+
 void initialize_aquarium();
  
 struct aquarium make_view(int x,int y,int width, int length);
@@ -19,9 +28,9 @@ struct aquarium make_view(int x,int y,int width, int length);
 
 int add_fish(poisson poisson , int x , int y, void (*mobility)());
 
-int del_fish(type fish_type , int view_number);
+int del_fish(enum type fish_type , int view_number);
 
-int start_fish(type fish_type , int view_number);
+int start_fish(enum type  fish_type , int view_number);
 
 
 #endif 

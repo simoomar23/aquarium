@@ -43,6 +43,8 @@ int set__add_head(struct set *s,poisson poisson) ;
 /*removes c element from s*/
 int set__remove(struct set *s,poisson poisson) ;
 
+struct set * get_fishes_view(struct set * fishes ,int x,int y,int length,int width);
+
 /*frees s set*/
 void free_set(struct set *s) ;
 

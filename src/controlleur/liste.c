@@ -54,6 +54,27 @@ int set__remove(struct set *s,poisson poisson) {
   }
   return 0;
 }
+
+int in(poisson poisson,int x,int y,int length,int width){
+	return (x <=poisson.x && poisson.x < x+length) &&  (y <=poisson.y && poisson.y < y+width);
+}
+
+
+struct set * get_fishes_view(struct set * fishes ,int x,int y,int length,int width){
+	struct lelement *e = fishes->l->head;
+	struct set * fishes_in = set__empty();
+	for(int i=0;i<fishes->size;i++){
+		if(in(e->poisson,x,y,length,width)){
+			poisson poisson = e->poisson;
+			poisson.x = poisson.x -x;
+			poisson.y = poisson.y -y;
+			assert(!set__add_head(fishes_in,poisson));
+			e = e->next;
+		}
+	}
+	return fishes_in;
+}
+
 void free_set(struct set *s) {
     while (s->l->head != NULL) {
         struct lelement *c = s->l->head;
