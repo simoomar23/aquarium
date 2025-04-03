@@ -1,5 +1,10 @@
 #include "liste.h"
 #include <stddef.h>
+#include <stdlib.h>
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+
 
 
 struct link lnk__empty(void) {
@@ -21,28 +26,37 @@ poisson get_poisson(struct lelement*elt){
   return elt->poisson;
 }
 
-struct lelement *set__find(struct set *s,poisson Poisson){
+struct lelement *set__find(struct set *s,char * name){
+  if( s == NULL && s->l == NULL && s->l->head)
+    return NULL;
+
   struct lelement *e=s->l->head;
   for(int i=0;i<s->size;i++){
-    if(same(get_poisson(e),Poisson)){
+    if(!strcmp(get_poisson(e).name,name)){
       return e;
     }
     e=e->next;
   }
   return NULL;
 }
-//la direction de add par rapport à la tile 
 int set__add_head(struct set *s, poisson poisson){
+  if(set__find(s,poisson.name)!=NULL)
+    return 1;
 
   struct lelement *e = malloc(sizeof(struct lelement));
   e->poisson = poisson;
   e-> next = get_head(s);
   e->prev = NULL;
+  if(e->next != NULL)
+    e->next->prev = e;
   s->l->head = e;
+  s->size++;
   return 0;
 }
 int set__remove(struct set *s,poisson poisson) {
-  struct lelement * e  = set__find(s,poisson);
+  struct lelement * e  = set__find(s,poisson.name);
+  if(e == NULL)
+    return 1;
   struct lelement * next = e->next;
   struct lelement *prev = e->prev;
   free(e);
@@ -52,25 +66,35 @@ int set__remove(struct set *s,poisson poisson) {
   else{
 	prev->next = next;
   }
+  s->size--;
   return 0;
 }
 
+int in_helper(int x1,int y1,int x,int y,int length,int width){ 
+  return (x <x1 && x1 < x+length) &&  (y <y1 && y1 < y+width);
+}
 int in(poisson poisson,int x,int y,int length,int width){
-	return (x <=poisson.x && poisson.x < x+length) &&  (y <=poisson.y && poisson.y < y+width);
+	return in_helper(poisson.coord.x,poisson.coord.y,x,y,length,width) || \
+  in_helper(poisson.coord.x + poisson.length,poisson.coord.y,x,y,length,width) || \
+  in_helper(poisson.coord.x,poisson.coord.y + poisson.width,x,y,length,width) || \
+  in_helper(poisson.coord.x + poisson.length,poisson.coord.y+poisson.width,x,y,length,width) ;
+
 }
 
 
-struct set * get_fishes_view(struct set * fishes ,int x,int y,int length,int width){
+struct set * get_fishes_in_view(struct set * fishes ,int x,int y,int length,int width){
 	struct lelement *e = fishes->l->head;
 	struct set * fishes_in = set__empty();
 	for(int i=0;i<fishes->size;i++){
 		if(in(e->poisson,x,y,length,width)){
 			poisson poisson = e->poisson;
-			poisson.x = poisson.x -x;
-			poisson.y = poisson.y -y;
+			poisson.coord.x = ((poisson.coord.x -x)*HUNDRED)/length;
+			poisson.coord.y = ((poisson.coord.y -y)*HUNDRED)/width;
+      poisson.length = (poisson.length *HUNDRED)/length;
+      poisson.width = (poisson.width * HUNDRED)/width;
 			assert(!set__add_head(fishes_in,poisson));
-			e = e->next;
 		}
+    e = e->next;
 	}
 	return fishes_in;
 }
@@ -97,3 +121,4 @@ void set_print(struct set *s,char*prefix){
   }
   printf("]\n");
 }
+

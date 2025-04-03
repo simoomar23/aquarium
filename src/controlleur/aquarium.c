@@ -1,39 +1,173 @@
 #include "aquarium.h"
 #include "model.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
 
 
 aquarium * my_aquarium;
 
-void initialize_aquarium(int width,int length){
+views my_views;
+
+
+
+
+void initialize_aquarium(int length,int width,view all_views[],int size){
 	my_aquarium = malloc(sizeof(*my_aquarium));
 	my_aquarium->length = length;
 	my_aquarium->width = width;
+	assert(MAX_VIEWS >= size);
 	my_aquarium->fishs = set__empty();
+	for(int i=0;i<size;i++){
+		my_views.all_views[i] = all_views[i];
+		my_views.all_views[i].length = (my_views.all_views[i].length*HUNDRED)/my_aquarium->length;
+		my_views.all_views[i].width = (my_views.all_views[i].width*HUNDRED)/my_aquarium->width;
+		my_views.all_views[i].x = (my_views.all_views[i].x*HUNDRED)/my_aquarium->length;
+		my_views.all_views[i].y = (my_views.all_views[i].y*HUNDRED)/my_aquarium->width;
+
+	}
+	my_views.size = size;
+
+}
+
+
+int find_view(int id){
+	int i;
+	for(i=0;i<my_views.size;i++){
+		if(my_views.all_views[i].id == id)
+			break;
+	}
+	return i;
+}
+
+int add_view(view view){
+	if(find_view(view.id)!=my_views.size)
+		return 1;
+	if(my_views.size<MAX_VIEWS)
+		return 1;
+	my_views.all_views[my_views.size] = view;
+	my_views.size++;
+	return 0;
 
 }
 
 
 
-/*aquarium * make_view(int x,int y,int width, int length){
-	aquarium * view = malloc(sizeof(*view));
-	view->length = length;
-	view->width = width;
-	view->fishs = get_fishes_view(my_aquarium->fishs,x,y,width,length);
-	return view; 
+void shift_left(int index){
+	for(int i=index;i<my_views.size-1;i++){
+		my_views.all_views[index] = my_views.all_views[index+1];
+	}
+}
 
-}*/
+int del_view(int id){
+	int i = find_view(id);
+	if(i == my_views.size)
+		return 1;
+	shift_left(i);
+	my_views.size--;
+	return 0;
+}
+
+int views_size(){
+	return my_views.size;
+}
 
 
 
-int add_fish(enum type fish_type , int x , int y, void (*mobility)()){
+
+
+
+int add_fish(char *name , int x , int y, int length, int width, coord (*mobility)(coord),int view_id){
+	int index = find_view(view_id);
+	if(index == my_views.size)
+		return 1;
 	poisson poisson;
-	poisson.x= x;
-	poisson.y =y;
-	
+	poisson.name = name;
+	poisson.length = (length*my_views.all_views[index].length)/HUNDRED;
+	poisson.width = (width*my_views.all_views[index].length)/HUNDRED;
+	poisson.coord.x= (my_views.all_views[index].length * x )/HUNDRED + my_views.all_views[index].x;
+	poisson.coord.y =(my_views.all_views[index].width * y )/HUNDRED + my_views.all_views[index].y;
+	poisson.status = NOTSTARTED;
+	poisson.mobility = mobility;
 	assert(!set__add_head(my_aquarium->fishs,poisson)); 
+	return 0;
 
 }
 
-int del_fish(enum type fish_type , int view_number);
+poisson get_fish_by_name(char * name,int view_id){
+	poisson poisson;
+	int index = find_view(view_id);
+	if(index != my_views.size){
+	struct set * view_fishes = get_fishes_in_view(my_aquarium->fishs,my_views.all_views[index].x,my_views.all_views[index].y,\
+	 									my_views.all_views[index].length,my_views.all_views[index].width);
+	struct lelement * elem = set__find(view_fishes,name);
+	if (elem ==NULL){
+		free_set(view_fishes);
+		
+		poisson.status = NOT_FOUND;
+		return poisson;
+	}
+	poisson = get_poisson(elem);
+	free_set(view_fishes);
+	return poisson;
+	}
 
-int start_fish(enum type  fish_type , int view_number);
+	poisson.status = NOT_FOUND;
+	return poisson;
+}
+
+
+
+int del_fish(char * name , int view_id){
+	poisson poisson = get_fish_by_name(name,view_id);
+	if(poisson.status == NOT_FOUND)
+		return 1;
+
+	return set__remove(my_aquarium->fishs,poisson);
+	
+}
+
+int start_fish(char * name, int view_number){
+	poisson poisson = get_fish_by_name(name,view_number);
+	if(poisson.status == NOT_FOUND)
+		return 1;
+	struct lelement * elem = set__find(my_aquarium->fishs,name);
+	elem->poisson.status = STARTED;
+	return 0;
+}
+
+////////////////////////////////////////////////////// pay attention : it retruns only STARTED fishes
+poisson * getFishes(int view_id){
+	int size;
+	int poisson_array_size =0;
+	int index = find_view(view_id);
+	if(index != my_views.size){
+	struct set * view_fishes = get_fishes_in_view(my_aquarium->fishs,my_views.all_views[index].x,my_views.all_views[index].y,\
+	 									my_views.all_views[index].length,my_views.all_views[index].width);
+	
+	if(!(size = set_size(view_fishes))){
+		free_set(view_fishes);
+		return NULL;
+	}
+	int view_fish_size = set_size(view_fishes);
+	poisson * all_fish = malloc(sizeof(poisson)*view_fish_size);
+
+	struct lelement *e=view_fishes->l->head;
+  	for(int i=0;i<size;i++){
+    	if(get_poisson(e).status == STARTED){
+			e->poisson.coord = e->poisson.mobility(e->poisson.coord);
+			all_fish[i] = e->poisson; 
+			poisson_array_size++;
+      
+    	}
+    	e=e->next;
+  	}
+	free_set(view_fishes);
+	if(poisson_array_size ==0)
+		return NULL;
+	if(poisson_array_size!=view_fish_size)
+		all_fish =realloc(all_fish,poisson_array_size*sizeof(poisson));
+  	return all_fish ;
+	}
+	return NULL;
+}

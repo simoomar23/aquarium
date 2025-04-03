@@ -1,22 +1,14 @@
 #ifndef MODEL_H 
 #define MODEL_H
 
-#define POISSONROUGET [0,10,4]
-#define POISSONAINT [1,15,8]
-
-enum type {
-	POISSONROUGE,
-	POISSONAIN
-
-};
-
-
+#define MAX_STEP 5
 
 
 
 enum status {
 	STARTED,
-	NOTSTARTED
+	NOTSTARTED,
+	NOT_FOUND
 };
 
 typedef struct coord {
@@ -25,18 +17,19 @@ typedef struct coord {
 }coord;
 
 typedef struct poisson {
+	char * name;
 	int length;
 	int width;
-	int x;
-	int y;
+	coord coord;
 	enum status status;
-	enum type type;
 	coord (*mobility)(coord); 
 	
 } poisson;
 
 
 void print_poisson(poisson poisson);
+
+coord RandomPathWay(coord corrdon);
 
 
 
