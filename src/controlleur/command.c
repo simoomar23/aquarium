@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <time.h>
 
+
 // Command function prototypes
 void cmd_hello(int sd, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 void cmd_load(int sd, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
@@ -19,6 +20,10 @@ typedef struct {
     char *name;
     void (*func)(int, char[MAX_TOKENS][MAX_TOKEN_LENGTH], int);
 } Command;
+
+// Currently loaded aquarium
+char loaded_aquarium[MAX_TOKEN_LENGTH] = "";  // Stores the currently loaded aquarium filename
+
 
 // Command lookup table
 Command commandTable[] = {
