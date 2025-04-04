@@ -12,7 +12,7 @@
 #include <unistd.h>
 
 
-
+int is_id(char * id);
 
 // this function if there is a syntax error returns -1
 // otherwise it returns 0 if hello alone or the id of the view

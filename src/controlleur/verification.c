@@ -11,7 +11,8 @@ int is_id(char * id){
         return 0;
     char * end;
     int number = strtol(&id[1],&end,10);
-    return end == NULL ? number : 0;
+    printf("%d\n",number);
+    return *end == 0 ? number : 0;
 }
 
 // this function if there is a syntax error returns -1
@@ -32,12 +33,12 @@ int hello_verification(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount
 // this function verifies if one arg is provided and file exists return 0 if exists otherwise 1
 int load_show_save_verification(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount, char * file){
     if(tokenCount != 2)
-        return -1;
+        return 1;
     if(!strcmp(tokens[0],"SAVE"))
         return 0;
     if(!strcmp(tokens[0],"SHOW"))
-        return strcmp(tokens[1],file);
-    return access(tokens[1],F_OK);
+        return strcmp(tokens[1],file) == 0 ? 0 : 1;
+    return access(tokens[1],F_OK) == 0 ? 0 : 1;
 }
 
 //this function doesn't verify the view id , it verifies in command.c file . returns 0 if ok 1 if not
@@ -61,7 +62,7 @@ int add_view_verification(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCo
             return 1;
         copy = &end[1];
         int wid = strtol(copy,&end,10);
-        if(end != NULL)
+        if(*end != 0)
             return 1;
         return !(x<length && y<width && x+len<length && y+wid < width);
         
@@ -69,6 +70,7 @@ int add_view_verification(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCo
 
 
     }
+    return 1;
 }
 
 int del_view_verification(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
@@ -93,7 +95,6 @@ int add_fish_verification(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCo
         return 1;
     
     copy = tokens[4];
-    end;
     int length = strtol(copy,&end,10);
     if(end[0]!='x' || x+length > 100)
         return 1;
