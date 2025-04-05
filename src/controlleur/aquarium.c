@@ -30,13 +30,14 @@ void initialize_aquarium(int length,int width,view all_views[],int size){
 
 }
 
-struct view make_view(int id,int x,int y,int width, int length){
+struct view make_view(int id,int x,int y,int width, int length , int available){
 	struct view view ;
 	view.id = id;
 	view.x = x;
 	view.y = y;
 	view.width = width;
 	view.length = length;
+	view.available = available;
 	return view;
 }
 

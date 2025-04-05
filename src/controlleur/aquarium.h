@@ -20,6 +20,7 @@ typedef struct view {
 	int y;
 	int width;
 	int length;
+	int available;
 }view;
 
 typedef struct views {
@@ -30,7 +31,7 @@ typedef struct views {
 
 void initialize_aquarium(int length,int width,view all_views[],int size);
  
-struct view make_view(int id,int x,int y,int width, int length);
+struct view make_view(int id,int x,int y,int width, int length,int available);
 
 int find_view(int id);
 
