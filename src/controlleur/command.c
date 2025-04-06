@@ -97,6 +97,7 @@ void cmd_show(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
     while (fgets(line, sizeof(line), file)) {
         printf("%s", line);
     }
+    printf("\n");
 
     fclose(file);
 }
