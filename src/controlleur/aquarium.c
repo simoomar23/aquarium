@@ -45,15 +45,15 @@ int find_view(int id){
 	int i;
 	for(i=0;i<my_views.size;i++){
 		if(my_views.all_views[i].id == id)
-			break;
+			return i;
 	}
-	return i;
+	return -1;
 }
 
 int add_view(view view){
-	if(find_view(view.id)!=my_views.size)
+	if(find_view(view.id)== -1)
 		return 1;
-	if(my_views.size<MAX_VIEWS)
+	if(my_views.size>MAX_VIEWS)
 		return 1;
 	my_views.all_views[my_views.size] = view;
 	my_views.size++;
@@ -71,7 +71,7 @@ void shift_left(int index){
 
 int del_view(int id){
 	int i = find_view(id);
-	if(i == my_views.size)
+	if(i == -1)
 		return 1;
 	shift_left(i);
 	my_views.size--;
@@ -180,4 +180,29 @@ poisson * getFishes(int view_id){
   	return all_fish ;
 	}
 	return NULL;
+}
+
+
+int available_view(){
+	int size = view_size();
+	for (int i = 0 ; i < size ; i++){
+		if (my_views.all_views[i].available){
+			return my_views.all_views[i].id;
+		}
+	}
+	return -1;
+}
+
+void changeavailable(int id){
+	int i = find_view(id);
+	if (i ==-1){
+		perror("change available error");
+	}
+	else{
+		my_views.all_views[i].available = !my_views.all_views[i].available ;
+	}
+}
+
+views get_views(){
+	return my_views;
 }

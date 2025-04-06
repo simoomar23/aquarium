@@ -43,6 +43,7 @@ int add_fish(char *name , int x , int y, int length, int width, coord (*mobility
 
 int views_size();
 
+int available_view();
 
 poisson get_fish_by_name(char * name,int view_id);
 
@@ -52,5 +53,7 @@ int start_fish(char * name, int view_number);
 
 poisson * getFishes(int view_id);
 
+void changeavailable(int id);
 
+views get_views();
 #endif 
