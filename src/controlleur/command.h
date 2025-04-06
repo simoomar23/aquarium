@@ -5,6 +5,6 @@
 #define MAX_TOKENS 10
 #define MAX_TOKEN_LENGTH 100
 
-void handle_command(int sd, char *input);
+void handle_command(char *input);
 
 #endif
