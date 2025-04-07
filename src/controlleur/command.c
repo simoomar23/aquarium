@@ -8,8 +8,8 @@
 #include "verification.h"
 #include "aquarium.h"
 
-#define MAX_TOKENS 10
-#define MAX_TOKEN_LENGTH 256
+
+#define TIME 2
 
 
 void cmd_load(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
@@ -17,7 +17,6 @@ void cmd_show(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 void cmd_add(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 void cmd_del(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 void cmd_save(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-void prompt_cmd_unknown(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 
 
 char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
@@ -26,10 +25,10 @@ char * cmd_status(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCou
 char * cmd_delFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_startFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_ls(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+/*char * cmd_ls(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_ping(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);*/
 
 typedef struct {
     char *name;
@@ -43,31 +42,31 @@ typedef struct {
 
 char loaded_aquarium[MAX_TOKEN_LENGTH] = "";
 
-ClientCommand commandTable[] = {
+PromptCommand commandTable[] = {
     {"load", cmd_load},
     {"show", cmd_show},
     {"add", cmd_add},
     {"del", cmd_del},
     {"save", cmd_save}, 
 };
-PromptCommand promptcommande[] = {
+ClientCommand clientcommande[] = {
     {"hello", cmd_hello},
     {"addFish", cmd_addFish},
      {"status", cmd_status},
     {"delFish", cmd_delFish},
     {"startFish", cmd_startFish},
-    {"getFishes", cmd_getFishes},
+    {"getFishes", cmd_getFishes}/*,
     {"ls", cmd_ls},
     {"getFishesContinuously", cmd_getFishesContinuously},
     {"log", cmd_log},
-    {"ping", cmd_ping}
+    {"ping", cmd_ping}*/
 };
 
 int command_length;
 int command_width;
 
-#define CLIENT_COMMAND_COUNT (sizeof(commandTable) / sizeof(ClientCommand))
-#define PROMPT_COMMAND_COUNT (sizeof(promptcommande) / sizeof(PromptCommand))
+#define PROMPT_COMMAND_COUNT (sizeof(commandTable) / sizeof(PromptCommand))
+#define CLIENT_COMMAND_COUNT (sizeof(clientcommande) / sizeof(ClientCommand))
 
 int tokenize(char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]) {
     int tokenCount = 0;
@@ -87,14 +86,14 @@ void handle_command(char *input) {
 
     if (tokenCount == 0) return;
 
-    for (int i = 0; i < CLIENT_COMMAND_COUNT; i++) {
+    for (long unsigned int i = 0; i < PROMPT_COMMAND_COUNT; i++) {
         if (strcmp(tokens[0], commandTable[i].name) == 0) {
             commandTable[i].func(tokens, tokenCount);
             return;
         }
     }
 
-    prompt_cmd_unknown(tokens, tokenCount);
+    printf("commande invalide\n");
 }
 
 void tokenize_load(char *c) {
@@ -254,7 +253,7 @@ void cmd_save(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
 
     FILE *dest = fopen(tokens[1], "w");
     views v = get_views();
-    char * result;
+    char * result = malloc(20);
     snprintf(result, 20, "%dx%d\n", command_width,command_length);
     fwrite(result, 1, strlen(result), dest);
     for (int i =0 ; i< v.size;i++){
@@ -323,7 +322,6 @@ char * cmd_addFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCo
     if(add_fish_verification(tokens,tokenCount)){
         return "NOK : commande introuvable ou paramétres insupportables";
     }
-    int id;
 	int x;
 	int y;
 	int width;
@@ -336,11 +334,144 @@ char * cmd_addFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCo
         return "NOK : poisson existe déja dans l'aquarium";
     return "OK";
 }
-char * cmd_status(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_delFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_startFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_ls(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char *cmd_status(int fd, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
+    if(tokenCount ==1 && strcmp(tokens[0],"status")==0){
+    int count = 0;
+    poisson *fishes = getFishes(get_id_of_fd(fd), &count); 
+
+    if (fishes == NULL || count == 0) {
+        return strdup("OK : Connecté au contrôleur, 0 poissons trouvés\n");
+    }
+
+    size_t bufferSize = 2048;
+    char *result = malloc(bufferSize);
+    if (result == NULL) return NULL;
+    result[0] = '\0';
+
+    for (int i = 0; i < count; i++) {
+        char line[256];
+        snprintf(line, sizeof(line), "Fish %s at %dx%d,%dx%d %d\n",
+                 fishes[i].name,
+                 fishes[i].coord.x, fishes[i].coord.y,
+                 fishes[i].width, fishes[i].length,
+                 fishes[i].status);
+
+        if (strlen(result) + strlen(line) + 1 > bufferSize) {
+            bufferSize *= 2;
+            char *newResult = realloc(result, bufferSize);
+            if (newResult == NULL) {
+                free(result);
+                return NULL;
+            }
+            result = newResult;
+        }
+
+        strcat(result, line);
+    }
+    char header[128];
+    snprintf(header, sizeof(header),
+             "OK : Connecté au contrôleur, %d poissons trouvés\n", count);
+
+    size_t finalSize = strlen(header) + strlen(result) + 1;
+    char *final = malloc(finalSize);
+    if (final == NULL) {
+        free(result);
+        return NULL;
+    }
+
+    strcpy(final, header);
+    strcat(final, result);
+    free(result);
+
+    return final;
+    }
+    return "NOK : commande introuvable";
+}
+
+
+
+
+char * cmd_delFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
+    if(tokenCount == 2){
+    if(del_fish(tokens[1],get_id_of_fd(fd)))
+        return "NOK : poisson inexistant";
+    return "OK";
+    }
+    return "NOK : commande introuvable";
+}
+char * cmd_startFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
+    if(tokenCount == 2){
+        if(start_fish(tokens[1],get_id_of_fd(fd)))
+            return "NOK : poisson inexistant";
+        return "OK";
+    }
+     return "NOK : commande introuvable";
+}
+char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute__((unused)), int tokenCount __attribute__((unused))){
+    int count = 0;
+    poisson *fishes = getFishes(get_id_of_fd(fd), &count); 
+
+    if (fishes == NULL || count == 0) {
+        return strdup("list\n");
+    }
+
+    size_t bufferSize = 2048;
+    char *result = malloc(bufferSize);
+    if (result == NULL) return NULL;
+    result[0] = '\0';
+
+    for (int i = 0; i < count; i++) {
+        char line[256];
+        snprintf(line, sizeof(line), "[%s at %dx%d,%dx%d,%d]\n",
+                 fishes[i].name,
+                 fishes[i].coord.x, fishes[i].coord.y,
+                 fishes[i].width, fishes[i].length,
+                 TIME);
+
+        if (strlen(result) + strlen(line) + 1 > bufferSize) {
+            bufferSize *= 2;
+            char *newResult = realloc(result, bufferSize);
+            if (newResult == NULL) {
+                free(result);
+                return NULL;
+            }
+            result = newResult;
+        }
+
+        strcat(result, line);
+    }
+    char header[] ="list ";
+
+
+    size_t finalSize = strlen(header) + strlen(result) + 1;
+    char *final = malloc(finalSize);
+    if (final == NULL) {
+        free(result);
+        return NULL;
+    }
+
+    strcpy(final, header);
+    strcat(final, result);
+    free(result);
+
+    return final;
+}
+/*char * cmd_ls(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_ping(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);*/
+
+char* handle_client_command(int fd,char *input) {
+    char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH];
+    int tokenCount = tokenize(input, tokens);
+
+    if (tokenCount == 0) return "\n";
+
+    for (long unsigned int i = 0; i < CLIENT_COMMAND_COUNT; i++) {
+        if (strcmp(tokens[0], clientcommande[i].name) == 0) {
+            return clientcommande[i].func(fd,tokens, tokenCount);
+            
+        }
+    }
+    return "NOK : invalid commande\n";
+}

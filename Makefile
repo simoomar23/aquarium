@@ -10,40 +10,48 @@ TST_DIR = test
 # Include Directory
 INC_DIR = $(SRC_DIR)
 
+# Output Executable
+MAIN = $(BUILD_DIR)/main
+
 # Source and Header Files
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 DEPS := $(wildcard $(SRC_DIR)/*.h)
 
-# Object Files
+# Object Files from sources
 OBJS := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
 
-# Test Files
+# Test Sources & Executables
 TEST_SRCS := $(wildcard $(TST_DIR)/*.c)
 TEST_OBJS := $(patsubst $(TST_DIR)/%.c, $(BUILD_DIR)/%.o, $(TEST_SRCS))
 TEST_EXECUTABLES := $(patsubst $(TST_DIR)/%.c, $(BUILD_DIR)/%, $(TEST_SRCS))
 
+.PHONY: all clean tests
 
+# ====== Default build ======
+all: $(MAIN)
 
-.PHONY: all clean
-
-# Default Target
-all: $(TEST_EXECUTABLES)
-
-
-# Test Executables
-$(BUILD_DIR)/%: $(BUILD_DIR)/%.o $(OBJS)
+# ====== Main executable ======
+$(MAIN): $(OBJS)
+	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) $^ -o $@
 
-# Object Files for Source
+# ====== Build test executables ======
+tests: $(TEST_EXECUTABLES)
+
+$(BUILD_DIR)/%: $(BUILD_DIR)/%.o $(OBJS)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(CFLAGS) $^ -o $@
+
+# ====== Compile object files from source ======
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(DEPS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Object Files for Tests
+# ====== Compile object files from tests ======
 $(BUILD_DIR)/%.o: $(TST_DIR)/%.c $(DEPS)
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Clean Up
+# ====== Clean build directory ======
 clean:
 	rm -rf $(BUILD_DIR)

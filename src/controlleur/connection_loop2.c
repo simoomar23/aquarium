@@ -194,16 +194,12 @@ int main() {
 					} else {
 						// Null-terminate and handle message
 						clientBuffer[bytesReceived] = '\0';
-						printf("Received from client %d: %s", sd, clientBuffer);
-
-						// Prepare response
-						char response[300];
-						snprintf(response, sizeof(response), "command received: %s", clientBuffer);
-
-						// Send response back to client
+						
+						char * response = handle_client_command(sd,clientBuffer);
 						if (send(sd, response, strlen(response), 0) == -1) {
 							perror("send failed");
 						}
+						//free(response);
 					}
 				}
 			}

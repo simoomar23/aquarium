@@ -147,7 +147,7 @@ int start_fish(char * name, int view_number){
 }
 
 ////////////////////////////////////////////////////// pay attention : it retruns only STARTED fishes
-poisson * getFishes(int view_id){
+poisson * getFishes(int view_id, int *count){
 	int size;
 	int poisson_array_size =0;
 	int index = find_view(view_id);
@@ -177,6 +177,7 @@ poisson * getFishes(int view_id){
 		return NULL;
 	if(poisson_array_size!=view_fish_size)
 		all_fish =realloc(all_fish,poisson_array_size*sizeof(poisson));
+	*count = poisson_array_size;
   	return all_fish ;
 	}
 	return NULL;
@@ -184,7 +185,7 @@ poisson * getFishes(int view_id){
 
 
 int available_view(){
-	int size = view_size();
+	int size = views_size();
 	for (int i = 0 ; i < size ; i++){
 		if (my_views.all_views[i].available == -1){
 			return my_views.all_views[i].id;
@@ -213,7 +214,7 @@ views get_views(){
 int get_id_of_fd(int fd){
 	int size = views_size();
 	for(int i=0;i<size;i++){
-		if(my_views.all_views[i].available = fd)
+		if(my_views.all_views[i].available == fd)
 			return my_views.all_views[i].id;
 	}
 	return -1;
