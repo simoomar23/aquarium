@@ -53,7 +53,9 @@ int start_fish(char * name, int view_number);
 
 poisson * getFishes(int view_id);
 
-void changeavailable(int id);
+void changeavailable(int id,int fd);
+
+int get_id_of_fd(int fd);
 
 views get_views();
 #endif 

@@ -186,23 +186,35 @@ poisson * getFishes(int view_id){
 int available_view(){
 	int size = view_size();
 	for (int i = 0 ; i < size ; i++){
-		if (my_views.all_views[i].available){
+		if (my_views.all_views[i].available == -1){
 			return my_views.all_views[i].id;
 		}
 	}
 	return -1;
 }
 
-void changeavailable(int id){
+void changeavailable(int id,int fd){
 	int i = find_view(id);
 	if (i ==-1){
 		perror("change available error");
 	}
 	else{
-		my_views.all_views[i].available = !my_views.all_views[i].available ;
+		if(my_views.all_views[i].available == fd)
+			my_views.all_views[i].available = -1;
+		else 
+			my_views.all_views[i].available = fd;
 	}
 }
 
 views get_views(){
 	return my_views;
+}
+
+int get_id_of_fd(int fd){
+	int size = views_size();
+	for(int i=0;i<size;i++){
+		if(my_views.all_views[i].available = fd)
+			return my_views.all_views[i].id;
+	}
+	return -1;
 }

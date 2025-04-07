@@ -11,39 +11,49 @@
 #define MAX_TOKENS 10
 #define MAX_TOKEN_LENGTH 256
 
-char * cmd_hello(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+
 void cmd_load(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 void cmd_show(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 void cmd_add(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 void cmd_del(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 void cmd_save(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-void cmd_unknown(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_addFish(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_status(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_delFish(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_startFish(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_getFishes(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_ls(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_getFishesContinuously(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_ping(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_log(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+void prompt_cmd_unknown(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+
+
+char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_addFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_status(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_delFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_startFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_ls(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_ping(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 
 typedef struct {
     char *name;
-    char * (*func)(char[MAX_TOKENS][MAX_TOKEN_LENGTH], int);
-} Command;
+    char * (*func)(int,char[MAX_TOKENS][MAX_TOKEN_LENGTH], int);
+} ClientCommand;
+
+typedef struct {
+    char *name;
+    void (*func)(char[MAX_TOKENS][MAX_TOKEN_LENGTH], int);
+} PromptCommand;
 
 char loaded_aquarium[MAX_TOKEN_LENGTH] = "";
 
-Command commandTable[] = {
-    {"hello", cmd_hello},
+ClientCommand commandTable[] = {
     {"load", cmd_load},
     {"show", cmd_show},
     {"add", cmd_add},
     {"del", cmd_del},
-    {"save", cmd_save},
+    {"save", cmd_save}, 
+};
+PromptCommand promptcommande[] = {
+    {"hello", cmd_hello},
     {"addFish", cmd_addFish},
-    {"status", cmd_status},
+     {"status", cmd_status},
     {"delFish", cmd_delFish},
     {"startFish", cmd_startFish},
     {"getFishes", cmd_getFishes},
@@ -56,7 +66,8 @@ Command commandTable[] = {
 int command_length;
 int command_width;
 
-#define COMMAND_COUNT (sizeof(commandTable) / sizeof(Command))
+#define CLIENT_COMMAND_COUNT (sizeof(commandTable) / sizeof(ClientCommand))
+#define PROMPT_COMMAND_COUNT (sizeof(promptcommande) / sizeof(PromptCommand))
 
 int tokenize(char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]) {
     int tokenCount = 0;
@@ -76,14 +87,14 @@ void handle_command(char *input) {
 
     if (tokenCount == 0) return;
 
-    for (int i = 0; i < COMMAND_COUNT; i++) {
+    for (int i = 0; i < CLIENT_COMMAND_COUNT; i++) {
         if (strcmp(tokens[0], commandTable[i].name) == 0) {
             commandTable[i].func(tokens, tokenCount);
             return;
         }
     }
 
-    cmd_unknown(tokens, tokenCount);
+    prompt_cmd_unknown(tokens, tokenCount);
 }
 
 void tokenize_load(char *c) {
@@ -115,7 +126,7 @@ void tokenize_load(char *c) {
     for (int j = 1;j < i ;j++){
         sscanf(lignes[j],"N%d %dx%d+%d+%d",&id,&x,&y,&width,&length);
 
-       total_views[j-1]=make_view(id,x,y,width,length,1);
+       total_views[j-1]=make_view(id,x,y,width,length,-1);
     }
     fclose(fichier);
     initialize_aquarium(command_length,command_width,total_views,i-1);
@@ -124,35 +135,10 @@ void tokenize_load(char *c) {
         free(lignes[j]); 
     }
     free(lignes); 
+    printf("aquarium loaded (%s)!\n", c);
 }
 
-char * cmd_hello(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
-    int var = hello_verification(tokens, tokenCount);
-    if (var == -1) {
-        return strdup("no greeting");
-    }
-    int i = available_view();
-    if (var == 0 && i == -1) {
-        return strdup("no greeting");
-    }
 
-    int greeting_num ;
-    if (var==0){
-        greeting_num = i ;
-    }
-    else{
-        greeting_num = var;
-    }
-
-    char *result = malloc(20);
-    if (result == NULL) {
-        return strdup("error allocating memory");
-    }
-
-    snprintf(result, 20, "greeting N%d", greeting_num);
-    changeavailable(greeting_num);
-    return result;
-}
 
 void cmd_load(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
     if (tokenCount < 2) {
@@ -164,7 +150,6 @@ void cmd_load(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
     strcpy(loaded_aquarium, tokens[1]);
     tokenize_load(loaded_aquarium);
 
-    printf("aquarium loaded (%s)!\n", tokens[1]);
 }
 
 void cmd_show(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
@@ -300,6 +285,62 @@ void cmd_save(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
     printf("Aquarium saved! (%s)\n", tokens[1]);*/
 }
 
-void cmd_unknown(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
-    printf("Unknown command: %s\n", tokens[0]);
+
+
+
+
+char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
+    int var = hello_verification(tokens, tokenCount);
+    if (var == -1) {
+        return strdup("no greeting");
+    }
+    int i = available_view();
+    if (var == 0 && i == -1) {
+        return strdup("no greeting");
+    }
+
+    int greeting_num ;
+    if (var==0){
+        greeting_num = i ;
+    }
+    else{
+        greeting_num = var;
+    }
+
+    char *result = malloc(20);
+    if (result == NULL) {
+        return strdup("error allocating memory");
+    }
+
+    snprintf(result, 20, "greeting N%d", greeting_num);
+    changeavailable(greeting_num,fd);
+    return result;
 }
+
+
+
+char * cmd_addFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
+    if(add_fish_verification(tokens,tokenCount)){
+        return "NOK : commande introuvable ou paramétres insupportables";
+    }
+    int id;
+	int x;
+	int y;
+	int width;
+	int length;
+    if(strcmp(tokens[5],"RandomWayPoint"))
+        return "NOK : modèle de mobilité non supporté";
+    sscanf(tokens[3],"%dx%d,",&x,&y);
+    sscanf(tokens[4],"%dx%d,",&length,&width);
+    if(add_fish(tokens[1],x,y,length,width,RandomPathWay,get_id_of_fd(fd)))
+        return "NOK : poisson existe déja dans l'aquarium";
+    return "OK";
+}
+char * cmd_status(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_delFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_startFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_ls(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_ping(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
