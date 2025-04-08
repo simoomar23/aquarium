@@ -72,8 +72,8 @@ int tokenize(char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]) {
     int tokenCount = 0;
     char *token = strtok(input, " \t\n");
     while (token != NULL && tokenCount < MAX_TOKENS) {
-        strncpy(tokens[tokenCount], token, MAX_TOKEN_LENGTH - 1);
-        tokens[tokenCount][MAX_TOKEN_LENGTH - 1] = '\0';
+        strncpy(tokens[tokenCount], token, strlen(token));
+        tokens[tokenCount][strlen(token)] = '\0';
         tokenCount++;
         token = strtok(NULL, " \t\n");
     }
@@ -85,15 +85,18 @@ void handle_command(char *input) {
     int tokenCount = tokenize(input, tokens);
 
     if (tokenCount == 0) return;
-
+    printf("tokens %s et %d \n",tokens[0],strlen(tokens[0]));
     for (long unsigned int i = 0; i < PROMPT_COMMAND_COUNT; i++) {
-        if (strcmp(tokens[0], commandTable[i].name) == 0) {
+        int c = strcmp(tokens[0], commandTable[i].name);
+       
+        printf("command [%d] = %s\n",i,commandTable[i].name);
+        if (c == 0) {
             commandTable[i].func(tokens, tokenCount);
             return;
         }
     }
 
-    printf("commande invalide\n");
+    printf("commande invalidgfhfhfe\n");
 }
 
 void tokenize_load(char *c) {
@@ -145,7 +148,7 @@ void cmd_load(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
         return;
     }
 
-
+    printf("hhhhh\n");
     strcpy(loaded_aquarium, tokens[1]);
     tokenize_load(loaded_aquarium);
 
@@ -289,12 +292,15 @@ void cmd_save(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
 
 
 char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
+    printf("%d mother fucker\n",tokenCount);
     int var = hello_verification(tokens, tokenCount);
     if (var == -1) {
+        printf("verification\n");
         return strdup("no greeting");
     }
     int i = available_view();
     if (var == 0 && i == -1) {
+        printf("available\n");
         return strdup("no greeting");
     }
 
@@ -310,7 +316,7 @@ char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCoun
     if (result == NULL) {
         return strdup("error allocating memory");
     }
-
+    
     snprintf(result, 20, "greeting N%d", greeting_num);
     changeavailable(greeting_num,fd);
     return result;
@@ -466,12 +472,17 @@ char* handle_client_command(int fd,char *input) {
     int tokenCount = tokenize(input, tokens);
 
     if (tokenCount == 0) return "\n";
-
+    //printf("notre chine%s et %d\n",tokens[0],strlen(tokens[0]));
     for (long unsigned int i = 0; i < CLIENT_COMMAND_COUNT; i++) {
-        if (strcmp(tokens[0], clientcommande[i].name) == 0) {
+        //printf("client[%ld]= %s et %d\n",i,clientcommande[i].name, strlen(clientcommande[i].name));
+        int c= strcmp(tokens[0], clientcommande[i].name);
+        //printf("%d\n",c);
+        if (c  == 0) {
+
             return clientcommande[i].func(fd,tokens, tokenCount);
             
         }
+
     }
     return "NOK : invalid commande\n";
 }

@@ -31,7 +31,7 @@ int set_non_blocking(int socket) {
 	return 0;
 }
 
-int main() {
+int main(int argc,char*argv[]) {
    int serverSocket, clientSocket[MAX_CLIENTS] = {0};
    struct sockaddr_in serverAddr, clientAddr; 
    socklen_t clientLen = sizeof(clientAddr);
@@ -56,7 +56,7 @@ int main() {
    // Bind
    memset(&serverAddr, 0, sizeof(serverAddr)); // Initilalize server structure to zeros
    serverAddr.sin_family = AF_INET;
-   serverAddr.sin_port = htons(9090) ; // Auto assign free port
+   serverAddr.sin_port = htons(atoi(argv[1])) ; // Auto assign free port
    serverAddr.sin_addr.s_addr = INADDR_ANY;  // Bind to all available interfaces
 
 

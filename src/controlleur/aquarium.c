@@ -186,7 +186,9 @@ poisson * getFishes(int view_id, int *count){
 
 int available_view(){
 	int size = views_size();
+	printf("%d = size \n",size);
 	for (int i = 0 ; i < size ; i++){
+		printf("available %d?\n",my_views.all_views[i].available);
 		if (my_views.all_views[i].available == -1){
 			return my_views.all_views[i].id;
 		}
