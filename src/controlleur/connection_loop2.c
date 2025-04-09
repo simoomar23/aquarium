@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include "command.h"
 
-#define MAX_CLIENTS 3
+#define MAX_CLIENTS 7
 
 
 // Function to set the socket to non-blocking mode
@@ -71,7 +71,7 @@ int main(int argc,char*argv[]) {
    printf("\n");
 
    // Listen --- second argument is backlog
-   if (listen(serverSocket, 3) == -1){
+   if (listen(serverSocket, MAX_CLIENTS) == -1){
 	   perror("Listening failed");
 	   close(serverSocket);
 	   exit(EXIT_FAILURE);
@@ -129,7 +129,6 @@ int main(int argc,char*argv[]) {
 			fgets(buffer, sizeof(buffer), stdin);  // Read terminal input
 
 			// Print the terminal input on the next line
-			printf("Terminal input: %s", buffer);  // Just echo for testing
 			handle_command(buffer);
 
 			// Move the cursor back to the start of the line (overwrite the current prompt)

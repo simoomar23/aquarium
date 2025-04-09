@@ -70,13 +70,16 @@ int command_width;
 
 int tokenize(char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]) {
     int tokenCount = 0;
+    int size;
     char *token = strtok(input, " \t\n");
     while (token != NULL && tokenCount < MAX_TOKENS) {
-        strncpy(tokens[tokenCount], token, strlen(token));
-        tokens[tokenCount][strlen(token)] = '\0';
+        size = strlen(token);
+        strncpy(tokens[tokenCount], token, size);
+        tokens[tokenCount][size] = '\0';
         tokenCount++;
         token = strtok(NULL, " \t\n");
     }
+    tokens[tokenCount-1][size -1] ='\0';
     return tokenCount;
 }
 
@@ -148,7 +151,6 @@ void cmd_load(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
         return;
     }
 
-    printf("hhhhh\n");
     strcpy(loaded_aquarium, tokens[1]);
     tokenize_load(loaded_aquarium);
 
@@ -292,7 +294,6 @@ void cmd_save(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
 
 
 char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
-    printf("%d mother fucker\n",tokenCount);
     int var = hello_verification(tokens, tokenCount);
     if (var == -1) {
         printf("verification\n");
@@ -309,7 +310,10 @@ char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCoun
         greeting_num = i ;
     }
     else{
-        greeting_num = var;
+        if(find_view(var) != -1)
+            greeting_num = var;
+        else 
+            greeting_num = i;
     }
 
     char *result = malloc(20);
@@ -470,13 +474,10 @@ char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount)
 char* handle_client_command(int fd,char *input) {
     char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH];
     int tokenCount = tokenize(input, tokens);
-
     if (tokenCount == 0) return "\n";
-    //printf("notre chine%s et %d\n",tokens[0],strlen(tokens[0]));
     for (long unsigned int i = 0; i < CLIENT_COMMAND_COUNT; i++) {
-        //printf("client[%ld]= %s et %d\n",i,clientcommande[i].name, strlen(clientcommande[i].name));
         int c= strcmp(tokens[0], clientcommande[i].name);
-        //printf("%d\n",c);
+        printf("%d\n",c);
         if (c  == 0) {
 
             return clientcommande[i].func(fd,tokens, tokenCount);
