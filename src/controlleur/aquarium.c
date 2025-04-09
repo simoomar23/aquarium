@@ -51,7 +51,7 @@ int find_view(int id){
 }
 
 int add_view(view view){
-	if(find_view(view.id)== -1)
+	if(find_view(view.id)!= -1)
 		return 1;
 	if(my_views.size>MAX_VIEWS)
 		return 1;
@@ -89,7 +89,7 @@ int views_size(){
 
 int add_fish(char *name , int x , int y, int length, int width, coord (*mobility)(coord),int view_id){
 	int index = find_view(view_id);
-	if(index == my_views.size)
+	if(index == -1)
 		return 1;
 	poisson poisson;
 	poisson.name = name;
@@ -107,7 +107,7 @@ int add_fish(char *name , int x , int y, int length, int width, coord (*mobility
 poisson get_fish_by_name(char * name,int view_id){
 	poisson poisson;
 	int index = find_view(view_id);
-	if(index != my_views.size){
+	if(index != -1){
 	struct set * view_fishes = get_fishes_in_view(my_aquarium->fishs,my_views.all_views[index].x,my_views.all_views[index].y,\
 	 									my_views.all_views[index].length,my_views.all_views[index].width);
 	struct lelement * elem = set__find(view_fishes,name);
@@ -151,7 +151,7 @@ poisson * getFishes(int view_id, int *count){
 	int size;
 	int poisson_array_size =0;
 	int index = find_view(view_id);
-	if(index != my_views.size){
+	if(index != -1){
 	struct set * view_fishes = get_fishes_in_view(my_aquarium->fishs,my_views.all_views[index].x,my_views.all_views[index].y,\
 	 									my_views.all_views[index].length,my_views.all_views[index].width);
 	
@@ -220,4 +220,13 @@ int get_id_of_fd(int fd){
 			return my_views.all_views[i].id;
 	}
 	return -1;
+}
+
+int is_available(int var){
+	int size =views_size();
+	for(int i =0;i<size;i++){
+		if(my_views.all_views[i].id == var && my_views.all_views[i].available ==-1)
+			return 1;
+	}
+	return 0;
 }

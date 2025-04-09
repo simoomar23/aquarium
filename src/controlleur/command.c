@@ -79,7 +79,17 @@ int tokenize(char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]) {
         tokenCount++;
         token = strtok(NULL, " \t\n");
     }
-    tokens[tokenCount-1][size -1] ='\0';
+
+
+    /*for (long unsigned int i = 0; i < CLIENT_COMMAND_COUNT; i++) {
+            int c= strcmp(tokens[0], clientcommande[i].name);
+            printf("%d\n",c);
+            if (c  == 0) {
+                tokens[tokenCount-1][size -1] ='\0';
+            }
+
+    }*/
+    
     return tokenCount;
 }
 
@@ -89,6 +99,7 @@ void handle_command(char *input) {
 
     if (tokenCount == 0) return;
     printf("tokens %s et %d \n",tokens[0],strlen(tokens[0]));
+    printf("wa motherfucker ha ficher %s",tokens[1]);
     for (long unsigned int i = 0; i < PROMPT_COMMAND_COUNT; i++) {
         int c = strcmp(tokens[0], commandTable[i].name);
        
@@ -310,7 +321,7 @@ char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCoun
         greeting_num = i ;
     }
     else{
-        if(find_view(var) != -1)
+        if(find_view(var) != -1 && is_available(var))
             greeting_num = var;
         else 
             greeting_num = i;
@@ -475,6 +486,9 @@ char* handle_client_command(int fd,char *input) {
     char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH];
     int tokenCount = tokenize(input, tokens);
     if (tokenCount == 0) return "\n";
+    size_t size = strlen(tokens[tokenCount-1]);
+    tokens[tokenCount-1][size-1]=0;
+    printf("oooos %s\n",tokens[0]);
     for (long unsigned int i = 0; i < CLIENT_COMMAND_COUNT; i++) {
         int c= strcmp(tokens[0], clientcommande[i].name);
         printf("%d\n",c);
