@@ -98,8 +98,8 @@ void handle_command(char *input) {
     int tokenCount = tokenize(input, tokens);
 
     if (tokenCount == 0) return;
-    printf("tokens %s et %d \n",tokens[0],strlen(tokens[0]));
-    printf("wa motherfucker ha ficher %s",tokens[1]);
+    //printf("tokens %s et %d \n",tokens[0],strlen(tokens[0]));
+    //printf("wa motherfucker ha ficher %s",tokens[1]);
     for (long unsigned int i = 0; i < PROMPT_COMMAND_COUNT; i++) {
         int c = strcmp(tokens[0], commandTable[i].name);
        
@@ -110,7 +110,7 @@ void handle_command(char *input) {
         }
     }
 
-    printf("commande invalidgfhfhfe\n");
+    printf("commande invalide\n");
 }
 
 void tokenize_load(char *c) {
@@ -154,6 +154,21 @@ void tokenize_load(char *c) {
     printf("aquarium loaded (%s)!\n", c);
 }
 
+int help(char * file){
+    FILE *dest = fopen(file, "w");
+    views v = get_views();
+    char * result = malloc(20);
+    snprintf(result, 20, "%dx%d\n", command_width,command_length);
+    int vlength = command_length/HUNDRED;
+    int vwidth = command_width/HUNDRED;
+    fwrite(result, 1, strlen(result), dest);
+    for (int i =0 ; i< v.size;i++){
+        snprintf(result, 50, "N%d %dx%d+%d+%d\n", v.all_views[i].id,v.all_views[i].x*vlength,v.all_views[i].y*vwidth,v.all_views[i].width*vwidth,v.all_views[i].length*vlength);
+        fwrite(result, 1, strlen(result), dest);
+    }
+    fclose(dest);
+    return v.size;
+}
 
 
 void cmd_load(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
@@ -168,9 +183,10 @@ void cmd_load(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
 }
 
 void cmd_show(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
-    const char *filename = (tokenCount >= 2) ? tokens[1] : loaded_aquarium;
-
-    FILE *file = fopen(filename, "r");
+    if(tokenCount != 2 || strcmp(tokens[1],"aquarium"))
+        perror("enter 'aqurium' instead of a file\n");
+    else {
+    /*FILE *file = fopen(filename, "r");
     if (!file) {
         printf("Could not open file: %s\n", filename);
         return;
@@ -182,7 +198,22 @@ void cmd_show(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
     }
     printf("\n");
 
+    fclose(file);*/
+    char * show = "show";
+    help(show);
+    FILE *file = fopen(show, "r");
+    if (file == NULL) {
+        perror("Erreur à l'ouverture");
+    }
+    else{
+        char buffer[256];
+        while (fgets(buffer, sizeof(buffer), file) != NULL) {
+            printf("%s", buffer);
+        }
+    }
+
     fclose(file);
+    }
 }
 
 void cmd_add(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
@@ -195,9 +226,11 @@ void cmd_add(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
 	int y;
 	int width;
 	int length;
+    int vlength = command_length/HUNDRED;
+    int vwidth = command_width/HUNDRED;
     sscanf(tokens[3],"%dx%d+%d+%d",&x,&y,&width,&length);
     sscanf(tokens[2],"N%d",&id);
-    view view = make_view(id,x,y,width,length,1);
+    view view = make_view(id,x/vlength,y/vwidth,width/vwidth,length/vlength,-1);
     if (add_view(view) == 1 ){
         printf("caonnot add\n");
         return;
@@ -215,6 +248,7 @@ void cmd_del(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
     }
     int id ;
     sscanf(tokens[2],"N%d",&id);
+    printf("id : %d\n",id);
     if (!del_view(id)){
         printf("view N%d deleted.\n",id);
     }
@@ -267,17 +301,8 @@ void cmd_save(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
         return;
     }
 
-    FILE *dest = fopen(tokens[1], "w");
-    views v = get_views();
-    char * result = malloc(20);
-    snprintf(result, 20, "%dx%d\n", command_width,command_length);
-    fwrite(result, 1, strlen(result), dest);
-    for (int i =0 ; i< v.size;i++){
-        snprintf(result, 50, "N%d %dx%d+%d+%d\n", v.all_views[i].id,v.all_views[i].x,v.all_views[i].y,v.all_views[i].width,v.all_views[i].length);
-        fwrite(result, 1, strlen(result), dest);
-    }
-    fclose(dest);
-    printf("Aquarium saved ! (%d display views)\n",v.size);
+    int size = help(tokens[1]);
+    printf("Aquarium saved ! (%d display views)\n",size);
     /*
     FILE *src = fopen(loaded_aquarium, "r");
     FILE *dest = fopen(tokens[1], "w");
@@ -307,12 +332,10 @@ void cmd_save(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
 char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
     int var = hello_verification(tokens, tokenCount);
     if (var == -1) {
-        printf("verification\n");
         return strdup("no greeting");
     }
     int i = available_view();
-    if (var == 0 && i == -1) {
-        printf("available\n");
+    if (i == -1) {
         return strdup("no greeting");
     }
 

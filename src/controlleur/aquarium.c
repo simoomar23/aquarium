@@ -65,12 +65,15 @@ int add_view(view view){
 
 void shift_left(int index){
 	for(int i=index;i<my_views.size-1;i++){
-		my_views.all_views[index] = my_views.all_views[index+1];
+		printf(" id %d is %d \n",i,my_views.all_views[i].id);
+		my_views.all_views[i] = my_views.all_views[i+1];
+		printf(" id %d is %d \n",i,my_views.all_views[i].id);
 	}
 }
 
 int del_view(int id){
 	int i = find_view(id);
+	printf("index: %d\n",i);
 	if(i == -1)
 		return 1;
 	shift_left(i);
