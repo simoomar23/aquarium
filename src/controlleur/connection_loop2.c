@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include "command.h"
+#include "log_file.h"
 
 #define MAX_CLIENTS 7
 
@@ -32,6 +33,12 @@ int set_non_blocking(int socket) {
 }
 
 int main(int argc,char*argv[]) {
+	//start LOG FILE	
+	if (init_log("server.log") != 0) {
+    perror("Failed to open log file");
+    exit(EXIT_FAILURE);
+	}
+
    int serverSocket, clientSocket[MAX_CLIENTS] = {0};
    struct sockaddr_in serverAddr, clientAddr; 
    socklen_t clientLen = sizeof(clientAddr);
@@ -44,6 +51,7 @@ int main(int argc,char*argv[]) {
    /* domain AF_INET = IPv4 - type SOCK_STREAM = TCP - protocol = 0 */
    if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 	   perror("Server socket creation failed");
+	   log_message(LOG_ERROR, "Server failed to create socket");
 	   exit(EXIT_FAILURE);
    }
 
@@ -62,11 +70,14 @@ int main(int argc,char*argv[]) {
 
    if (bind(serverSocket, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1) {
 	   perror("Bind failed");
+	   log_message(LOG_ERROR, "Server failed to create socket");
 	   close(serverSocket);
+	   log_message(LOG_WARN, "Server closing");
 	   exit(EXIT_FAILURE);
    }
 
    printf("Socket successfully bound to port %d and  IPV4 adress %s\n", ntohs(serverAddr.sin_port), inet_ntoa(serverAddr.sin_addr));
+   log_message(LOG_INFO, "Server successfully bound on port %d and adress IP %s", serverAddr.sin_port, serverAddr.sin_addr.s_addr);
 
    printf("\n");
 
@@ -82,6 +93,8 @@ int main(int argc,char*argv[]) {
    printf("Server waiting for incomming connections..\n");
 
 	printf("\n");
+
+	log_message(LOG_INFO, "Server started on port %d and adress IP %s with %d MAX CLIENT", serverAddr.sin_port, serverAddr.sin_addr.s_addr, MAX_CLIENTS);
 
 
    while(1){
@@ -147,14 +160,24 @@ int main(int argc,char*argv[]) {
 				} else {
 					// Handle other errors
 					perror("Accept failed");
+					log_message(LOG_ERROR, "Accept failed: %s", strerror(errno));
 					close(serverSocket);
 					exit(EXIT_FAILURE);
-				}}
+				}
+			}
 		   if (newSocket < 0) {
 			   perror("Accept failed");
 			   continue;
 		   }
+
+		    // Get IP and port of the new client
+    		char ip_str[INET_ADDRSTRLEN];
+    		inet_ntop(AF_INET, &clientAddr.sin_addr, ip_str, sizeof(ip_str));
+    		int port = ntohs(clientAddr.sin_port);
+
 		   printf("New client connected: %d\n", newSocket);
+		   log_message(LOG_INFO, "Client %d connected from %s:%d", newSocket, ip_str, port);
+
 
 			// Set the new client socket to non-blocking mode
 			if (set_non_blocking(newSocket) == -1) {
@@ -185,7 +208,9 @@ int main(int argc,char*argv[]) {
 						// Connection closed or error
 						if (bytesReceived == 0) {
 							printf("Client %d disconnected\n", sd);
+							log_message(LOG_INFO, "Client %d disconnected", sd);
 						} else {
+							log_message(LOG_ERROR, "recv failed for client %d: %s", sd, strerror(errno));
 							perror("recv failed");
 						}
 						close(sd);
@@ -193,10 +218,15 @@ int main(int argc,char*argv[]) {
 					} else {
 						// Null-terminate and handle message
 						clientBuffer[bytesReceived] = '\0';
+
+						log_message(LOG_DEBUG, "Received from client %d: %s", sd, clientBuffer);
 						
 						char * response = handle_client_command(sd,clientBuffer);
 						if (send(sd, response, strlen(response), 0) == -1) {
 							perror("send failed");
+							log_message(LOG_ERROR, "send failed to client %d: %s", sd, strerror(errno));
+						} else {
+							log_message(LOG_DEBUG, "Response sent to client %d", sd);
 						}
 						//free(response);
 					}
@@ -209,5 +239,8 @@ int main(int argc,char*argv[]) {
    // Close communication sockets
    close(serverSocket);
    printf("Goodbye!\n");
+   log_message(LOG_INFO, "Server shutting down");
+    close_log();  // Close the log before exiting
+
    return 0;
 }
