@@ -87,11 +87,10 @@ struct set * get_fishes_in_view(struct set * fishes ,int x,int y,int length,int 
 	struct set * fishes_in = set__empty();
 	for(int i=0;i<fishes->size;i++){
 		if(in(e->poisson,x,y,length,width)){
+			e->poisson.coord = e->poisson.mobility(e->poisson.coord);
 			poisson poisson = e->poisson;
 			poisson.coord.x = ((poisson.coord.x -x)*HUNDRED)/length;
 			poisson.coord.y = ((poisson.coord.y -y)*HUNDRED)/width;
-      poisson.length = (poisson.length *HUNDRED)/length;
-      poisson.width = (poisson.width * HUNDRED)/width;
 			assert(!set__add_head(fishes_in,poisson));
 		}
     e = e->next;
