@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include "command.h"
 #include "log_file.h"
+#include "./config/config.h"
 
 #define MAX_CLIENTS 7
 
@@ -33,11 +34,20 @@ int set_non_blocking(int socket) {
 }
 
 int main(int argc,char*argv[]) {
+	Config config;
+
 	//start LOG FILE	
 	if (init_log("server.log") != 0) {
-    perror("Failed to open log file");
-    exit(EXIT_FAILURE);
+    	perror("Failed to open log file");
+    	exit(EXIT_FAILURE);
 	}
+	
+	//start Config file
+	if  (load_config("config.cfg", &config) != 0) {
+		fprintf(stderr, "Failed to load config.\n");
+		exit(EXIT_FAILURE);
+	}
+
 
    int serverSocket, clientSocket[MAX_CLIENTS] = {0};
    struct sockaddr_in serverAddr, clientAddr; 
@@ -64,7 +74,8 @@ int main(int argc,char*argv[]) {
    // Bind
    memset(&serverAddr, 0, sizeof(serverAddr)); // Initilalize server structure to zeros
    serverAddr.sin_family = AF_INET;
-   serverAddr.sin_port = htons(atoi(argv[1])) ; // Auto assign free port
+   //serverAddr.sin_port = htons(atoi(argv[1])) ; // user provided
+   serverAddr.sin_port = get_controller_port(&config);
    serverAddr.sin_addr.s_addr = INADDR_ANY;  // Bind to all available interfaces
 
 
@@ -77,7 +88,7 @@ int main(int argc,char*argv[]) {
    }
 
    printf("Socket successfully bound to port %d and  IPV4 adress %s\n", ntohs(serverAddr.sin_port), inet_ntoa(serverAddr.sin_addr));
-   log_message(LOG_INFO, "Server successfully bound on port %d and adress IP %s", serverAddr.sin_port, serverAddr.sin_addr.s_addr);
+   log_message(LOG_INFO, "Server successfully bound on port %d and IPV4 adress %s", serverAddr.sin_port, inet_ntoa(serverAddr.sin_addr));
 
    printf("\n");
 
@@ -95,7 +106,7 @@ int main(int argc,char*argv[]) {
 	printf("$");
 	fflush(stdout);
 
-	log_message(LOG_INFO, "Server started on port %d and adress IP %s with %d MAX CLIENT", serverAddr.sin_port, serverAddr.sin_addr.s_addr, MAX_CLIENTS);
+	log_message(LOG_INFO, "Server started on port %d and IPV4 adress %s with %d MAX CLIENT", serverAddr.sin_port, inet_ntoa(serverAddr.sin_addr), MAX_CLIENTS);
 
 
    while(1){
@@ -139,6 +150,7 @@ int main(int argc,char*argv[]) {
 		if (FD_ISSET(STDIN_FILENO, &readfds)) {
 			// Print the prompt
 			fgets(buffer, sizeof(buffer), stdin);  // Read terminal input
+			log_message(LOG_INFO, "user prompt entered command %s", buffer);
 
 			// Print the terminal input on the next line
 			handle_command(buffer);
