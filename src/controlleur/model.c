@@ -15,8 +15,8 @@ coord RandomPathWay(coord coordon){
 	coord new_coord;
 	srand(time(NULL));
 
-	new_coord.x = x + (rand()%3 - 1)* MAX_STEP;
-	new_coord.y = y + (rand()%3 - 1)* MAX_STEP;
+	new_coord.x = x + /*(rand()%3 - 1)**/ MAX_STEP;
+	new_coord.y = y + /*(rand()%3 - 1)**/ MAX_STEP;
 
 	return new_coord;
 }

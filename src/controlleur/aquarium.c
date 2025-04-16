@@ -20,8 +20,6 @@ void initialize_aquarium(int length,int width,view all_views[],int size){
 	my_aquarium->fishs = set__empty();
 	for(int i=0;i<size;i++){
 		my_views.all_views[i] = all_views[i];
-		my_views.all_views[i].length = (my_views.all_views[i].length*HUNDRED)/my_aquarium->length;
-		my_views.all_views[i].width = (my_views.all_views[i].width*HUNDRED)/my_aquarium->width;
 		my_views.all_views[i].x = (my_views.all_views[i].x*HUNDRED)/my_aquarium->length;
 		my_views.all_views[i].y = (my_views.all_views[i].y*HUNDRED)/my_aquarium->width;
 
@@ -65,15 +63,15 @@ int add_view(view view){
 
 void shift_left(int index){
 	for(int i=index;i<my_views.size-1;i++){
-		printf(" id %d is %d \n",i,my_views.all_views[i].id);
+		//printf(" id %d is %d \n",i,my_views.all_views[i].id);
 		my_views.all_views[i] = my_views.all_views[i+1];
-		printf(" id %d is %d \n",i,my_views.all_views[i].id);
+		//printf(" id %d is %d \n",i,my_views.all_views[i].id);
 	}
 }
 
 int del_view(int id){
 	int i = find_view(id);
-	printf("index: %d\n",i);
+	//printf("index: %d\n",i);
 	if(i == -1)
 		return 1;
 	shift_left(i);
@@ -162,8 +160,8 @@ poisson * getFishes(int view_id, int *count){
 		free_set(view_fishes);
 		return NULL;
 	}
-	int view_fish_size = set_size(view_fishes);
-	poisson * all_fish = malloc(sizeof(poisson)*view_fish_size);
+	int size = set_size(view_fishes);
+	poisson * all_fish = malloc(sizeof(poisson)*size);
 
 	struct lelement *e=view_fishes->l->head;
   	for(int i=0;i<size;i++){
@@ -189,9 +187,9 @@ poisson * getFishes(int view_id, int *count){
 
 int available_view(){
 	int size = views_size();
-	printf("%d = size \n",size);
+	//printf("%d = size \n",size);
 	for (int i = 0 ; i < size ; i++){
-		printf("available %d?\n",my_views.all_views[i].available);
+		//printf("available %d?\n",my_views.all_views[i].available);
 		if (my_views.all_views[i].available == -1){
 			return my_views.all_views[i].id;
 		}
@@ -232,4 +230,14 @@ int is_available(int var){
 			return 1;
 	}
 	return 0;
+}
+
+view get_view(int id){
+	int size = my_views.size;
+	for(int i=0;i<size;i++){
+		if(my_views.all_views[i].id == id)
+			return my_views.all_views[i];
+	}
+	perror("error while getting view \n ");
+	return my_views.all_views[0];
 }
