@@ -60,4 +60,6 @@ int get_id_of_fd(int fd);
 int is_available(int var);
 
 views get_views();
+
+view get_view(int id);
 #endif 

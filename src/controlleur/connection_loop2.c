@@ -92,7 +92,8 @@ int main(int argc,char*argv[]) {
 
    printf("Server waiting for incomming connections..\n");
 
-	printf("\n");
+	printf("$");
+	fflush(stdout);
 
 	log_message(LOG_INFO, "Server started on port %d and adress IP %s with %d MAX CLIENT", serverAddr.sin_port, serverAddr.sin_addr.s_addr, MAX_CLIENTS);
 
@@ -137,8 +138,6 @@ int main(int argc,char*argv[]) {
 		// Check if there's input from terminal
 		if (FD_ISSET(STDIN_FILENO, &readfds)) {
 			// Print the prompt
-			printf("$ ");
-			fflush(stdout);
 			fgets(buffer, sizeof(buffer), stdin);  // Read terminal input
 
 			// Print the terminal input on the next line
@@ -175,7 +174,7 @@ int main(int argc,char*argv[]) {
     		inet_ntop(AF_INET, &clientAddr.sin_addr, ip_str, sizeof(ip_str));
     		int port = ntohs(clientAddr.sin_port);
 
-		   printf("New client connected: %d\n", newSocket);
+		   //printf("New client connected: %d\n", newSocket);
 		   log_message(LOG_INFO, "Client %d connected from %s:%d", newSocket, ip_str, port);
 
 
@@ -198,7 +197,7 @@ int main(int argc,char*argv[]) {
 				int sd = clientSocket[i];
 
 				if (sd > 0 && FD_ISSET(sd, &readfds)) {
-					printf("%d\n", sd);
+					//printf("%d\n", sd);
 					char clientBuffer[256];
 					memset(clientBuffer, 0, sizeof(clientBuffer));
 
