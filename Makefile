@@ -7,6 +7,7 @@ BUILD_DIR = build
 SRC_DIR = src/controlleur
 TST_DIR = test
 
+
 # Include Directory
 INC_DIR = $(SRC_DIR)
 
@@ -14,8 +15,8 @@ INC_DIR = $(SRC_DIR)
 MAIN = $(BUILD_DIR)/main
 
 # Source and Header Files
-SRCS := $(wildcard $(SRC_DIR)/*.c)
-DEPS := $(wildcard $(SRC_DIR)/*.h)
+SRCS := $(wildcard $(SRC_DIR)/*.c) 
+DEPS := $(wildcard $(SRC_DIR)/*.h)	
 
 # Object Files from sources
 OBJS := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
