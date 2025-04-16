@@ -3,6 +3,8 @@ import java.net.*;
 import java.util.Scanner;
 import javafx.application.Application;
 import javafx.stage.Stage;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Client extends Application {
     static final int port = 9090;
@@ -10,7 +12,8 @@ public class Client extends Application {
     private BufferedReader plec;
     private AquariumApp app;
     private static String id;
-
+    BlockingQueue<String> okQueue = new LinkedBlockingQueue<>();
+    
     public static void main(String[] args) {
         id = args[1];
         launch(args);
@@ -30,15 +33,16 @@ public class Client extends Application {
         }).start();
     }
 
-public void startClient(String serverAddress) throws IOException {
+public int startClient(String serverAddress) throws IOException {
     Socket socket = new Socket(serverAddress, port);
     plec = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     pred = new PrintWriter(socket.getOutputStream(), true);
-
-    pred.println("hello in as " + id);
+    String connexion = "hello in as " + id;
+    pred.println(connexion);
     String greeting = plec.readLine();
-    System.out.println(greeting);
-    
+    System.out.println("    > " + greeting);
+    javafx.application.Platform.runLater(() -> app.handleCommand(connexion));
+    javafx.application.Platform.runLater(() -> app.handleCommand(greeting));    
     new Thread(() -> {
         try {
             String serverResponse;
@@ -47,7 +51,13 @@ public void startClient(String serverAddress) throws IOException {
                 
                 if (serverResponse.startsWith("list")) {
                     handleListResponse(serverResponse);
-                }
+                } else if (serverResponse.startsWith("OK")) {
+		    try {
+			okQueue.put("OK");
+		    } catch (InterruptedException e) {
+			e.printStackTrace();
+		    }		   
+		}
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -57,13 +67,29 @@ public void startClient(String serverAddress) throws IOException {
     Scanner scanner = new Scanner(System.in);
     while (true) {
 	//        System.out.print("$ ");
-        String command = scanner.nextLine();
+        String command= scanner.nextLine();
         if (command.equalsIgnoreCase("log out")) break;
-   
+	else if (socket.isClosed()) {
+	    System.out.println("-> NOK : Non Connecté au contrôleur !");
+	}
+	else if (command.startsWith("status"))
+	    javafx.application.Platform.runLater(() -> app.handleCommand(command));			    
+	else {
         pred.println(command);
-        javafx.application.Platform.runLater(() -> app.handleCommand(command));
+	String ok = null;
+	try {
+	    ok = okQueue.take();
+	} catch (InterruptedException e) {
+	    e.printStackTrace();
+	}
+        if (ok.equals("OK")) {
+	    System.out.println(command);
+            javafx.application.Platform.runLater(() -> app.handleCommand(command));
+        }
+	}
     }
     socket.close();
+    return 0;
 }
 
 private void handleListResponse(String response) {
