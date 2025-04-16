@@ -51,7 +51,7 @@ int find_view(int id){
 }
 
 int add_view(view view){
-	if(find_view(view.id)== -1)
+	if(find_view(view.id)!= -1)
 		return 1;
 	if(my_views.size>MAX_VIEWS)
 		return 1;
@@ -65,12 +65,15 @@ int add_view(view view){
 
 void shift_left(int index){
 	for(int i=index;i<my_views.size-1;i++){
-		my_views.all_views[index] = my_views.all_views[index+1];
+		printf(" id %d is %d \n",i,my_views.all_views[i].id);
+		my_views.all_views[i] = my_views.all_views[i+1];
+		printf(" id %d is %d \n",i,my_views.all_views[i].id);
 	}
 }
 
 int del_view(int id){
 	int i = find_view(id);
+	printf("index: %d\n",i);
 	if(i == -1)
 		return 1;
 	shift_left(i);
@@ -89,7 +92,7 @@ int views_size(){
 
 int add_fish(char *name , int x , int y, int length, int width, coord (*mobility)(coord),int view_id){
 	int index = find_view(view_id);
-	if(index == my_views.size)
+	if(index == -1)
 		return 1;
 	poisson poisson;
 	poisson.name = name;
@@ -107,7 +110,7 @@ int add_fish(char *name , int x , int y, int length, int width, coord (*mobility
 poisson get_fish_by_name(char * name,int view_id){
 	poisson poisson;
 	int index = find_view(view_id);
-	if(index != my_views.size){
+	if(index != -1){
 	struct set * view_fishes = get_fishes_in_view(my_aquarium->fishs,my_views.all_views[index].x,my_views.all_views[index].y,\
 	 									my_views.all_views[index].length,my_views.all_views[index].width);
 	struct lelement * elem = set__find(view_fishes,name);
@@ -151,7 +154,7 @@ poisson * getFishes(int view_id, int *count){
 	int size;
 	int poisson_array_size =0;
 	int index = find_view(view_id);
-	if(index != my_views.size){
+	if(index != -1){
 	struct set * view_fishes = get_fishes_in_view(my_aquarium->fishs,my_views.all_views[index].x,my_views.all_views[index].y,\
 	 									my_views.all_views[index].length,my_views.all_views[index].width);
 	
@@ -186,7 +189,9 @@ poisson * getFishes(int view_id, int *count){
 
 int available_view(){
 	int size = views_size();
+	printf("%d = size \n",size);
 	for (int i = 0 ; i < size ; i++){
+		printf("available %d?\n",my_views.all_views[i].available);
 		if (my_views.all_views[i].available == -1){
 			return my_views.all_views[i].id;
 		}
@@ -218,4 +223,13 @@ int get_id_of_fd(int fd){
 			return my_views.all_views[i].id;
 	}
 	return -1;
+}
+
+int is_available(int var){
+	int size =views_size();
+	for(int i =0;i<size;i++){
+		if(my_views.all_views[i].id == var && my_views.all_views[i].available ==-1)
+			return 1;
+	}
+	return 0;
 }
