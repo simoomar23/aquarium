@@ -20,8 +20,11 @@ void initialize_aquarium(int length,int width,view all_views[],int size){
 	my_aquarium->fishs = set__empty();
 	for(int i=0;i<size;i++){
 		my_views.all_views[i] = all_views[i];
-		my_views.all_views[i].x = (my_views.all_views[i].x*HUNDRED)/my_aquarium->length;
-		my_views.all_views[i].y = (my_views.all_views[i].y*HUNDRED)/my_aquarium->width;
+		my_views.all_views[i].x = all_views[i].x;
+		my_views.all_views[i].y = all_views[i].y;
+		my_views.all_views[i].length = all_views[i].length;
+		my_views.all_views[i].width = all_views[i].width;
+
 
 	}
 	my_views.size = size;
@@ -94,8 +97,8 @@ int add_fish(char *name , int x , int y, int length, int width, coord (*mobility
 		return 1;
 	poisson poisson;
 	poisson.name = name;
-	poisson.length = (length*my_views.all_views[index].length)/HUNDRED;
-	poisson.width = (width*my_views.all_views[index].length)/HUNDRED;
+	poisson.length =length;
+	poisson.width = width;
 	poisson.coord.x= (my_views.all_views[index].length * x )/HUNDRED + my_views.all_views[index].x;
 	poisson.coord.y =(my_views.all_views[index].width * y )/HUNDRED + my_views.all_views[index].y;
 	poisson.status = NOTSTARTED;
@@ -166,7 +169,6 @@ poisson * getFishes(int view_id, int *count){
 	struct lelement *e=view_fishes->l->head;
   	for(int i=0;i<size;i++){
     	if(get_poisson(e).status == STARTED){
-			e->poisson.coord = e->poisson.mobility(e->poisson.coord);
 			all_fish[i] = e->poisson; 
 			poisson_array_size++;
       
@@ -176,7 +178,7 @@ poisson * getFishes(int view_id, int *count){
 	free_set(view_fishes);
 	if(poisson_array_size ==0)
 		return NULL;
-	if(poisson_array_size!=view_fish_size)
+	if(poisson_array_size!=size)
 		all_fish =realloc(all_fish,poisson_array_size*sizeof(poisson));
 	*count = poisson_array_size;
   	return all_fish ;

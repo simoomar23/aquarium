@@ -159,11 +159,9 @@ int help(char * file){
     views v = get_views();
     char * result = malloc(20);
     snprintf(result, 20, "%dx%d\n", command_width,command_length);
-    int vlength = command_length/HUNDRED;
-    int vwidth = command_width/HUNDRED;
     fwrite(result, 1, strlen(result), dest);
     for (int i =0 ; i< v.size;i++){
-        snprintf(result, 50, "N%d %dx%d+%d+%d\n", v.all_views[i].id,v.all_views[i].x*vlength,v.all_views[i].y*vwidth,v.all_views[i].width*vwidth,v.all_views[i].length*vlength);
+        snprintf(result, 50, "N%d %dx%d+%d+%d\n", v.all_views[i].id,v.all_views[i].x,v.all_views[i].y,v.all_views[i].width,v.all_views[i].length);
         fwrite(result, 1, strlen(result), dest);
     }
     fclose(dest);
@@ -226,11 +224,9 @@ void cmd_add(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
 	int y;
 	int width;
 	int length;
-    int vlength = command_length/HUNDRED;
-    int vwidth = command_width/HUNDRED;
     sscanf(tokens[3],"%dx%d+%d+%d",&x,&y,&width,&length);
     sscanf(tokens[2],"N%d",&id);
-    view view = make_view(id,x/vlength,y/vwidth,width/vwidth,length/vlength,-1);
+    view view = make_view(id,x,y,width,length,-1);
     if (add_view(view) == 1 ){
         printf("caonnot add\n");
         return;
@@ -354,10 +350,8 @@ char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCoun
     if (result == NULL) {
         return strdup("error allocating memory");
     }
-	int vlength = command_length/HUNDRED;
-    int vwidth = command_width/HUNDRED;
     view  v = get_view(greeting_num);
-    snprintf(result, 40, "greeting N%d %dx%d+%d+%d\n", greeting_num,v.x*vlength,v.y*vwidth,v.width*vwidth,v.length*vlength);
+    snprintf(result, 40, "greeting N%d %dx%d+%d+%d\n", greeting_num,v.x,v.y,v.width,v.length);
     changeavailable(greeting_num,fd);
     return result;
 }
