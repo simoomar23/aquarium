@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class AquariumApp extends Application {
+    private int VUE_WIDTH = 500;    
+    private int VUE_HEIGHT = 500;
+    private String ID;
     private ArrayList<Poisson> fishes = new ArrayList<>(); 
 
     private Image poissonImage1 = new Image("images/poisson1.png");
@@ -25,14 +28,13 @@ public class AquariumApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Canvas canvas = new Canvas(500, 500);
+        Canvas canvas = new Canvas(VUE_WIDTH, VUE_HEIGHT);
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
-        Scene scene = new Scene(new StackPane(canvas), 500, 500);
+        Scene scene = new Scene(new StackPane(canvas), VUE_WIDTH, VUE_HEIGHT);
         primaryStage.setTitle("Aquarium");
         primaryStage.setScene(scene);
         primaryStage.show();
-	//	handleResponse("list [PoissonRouge at 90x4,10x4,1] [PoissonClown at 20x80,12x6,3]");	
         for (Poisson poisson : fishes) {
             setNewDestination(poisson);
         }
@@ -52,7 +54,7 @@ public class AquariumApp extends Application {
 
 		    for (Poisson poisson : fishes) {
 			poisson.updatePosition(elapsedSeconds);
-			if (poisson.hasStarted() && poisson.hasReachedDestination()) {
+			if (!poisson.hasReachedDestination()) {
 			    setNewDestination(poisson);
 			}
 		    }
@@ -64,8 +66,8 @@ public class AquariumApp extends Application {
     }
 
     private void addFish(String type, int x, int y, int width, int height, double remainingTime) {
-        Poisson newFish = new Poisson((x * 500) / 100, (y * 500) /100, (width * 500) / 100, ( height * 500 ) / 100, type, remainingTime);
-	newFish.setDestination((x * 500) / 100, (y * 500) / 100, remainingTime);
+        Poisson newFish = new Poisson((x * VUE_WIDTH) / 100, (y * VUE_HEIGHT) /100, (width * VUE_WIDTH) / 100, ( height * VUE_HEIGHT ) / 100, type, remainingTime);
+	newFish.setDestination((x * VUE_WIDTH) / 100, (y * VUE_HEIGHT) / 100, remainingTime);
         fishes.add(newFish);
     }
 
@@ -81,66 +83,89 @@ public class AquariumApp extends Application {
 
     public void handleCommand(String command) {
 	String[] parts = command.split(" ");
-	if (parts.length >= 6 && parts[0].equals("addFish")) {
+	if (parts.length == 6 && parts[0].equals("addFish")) {
 	    String type = parts[1];
 
 	    String[] position = parts[3].replace(",", "").split("x");
 
 	    String[] size = parts[4].replace(",", "").split("x");
-
+	    
 	    int x = Integer.parseInt(position[0]);
 	    int y = Integer.parseInt(position[1]);
-	    System.out.println("x = " + x);
 	    int width = Integer.parseInt(size[0]);
 	    int height = Integer.parseInt(size[1]);
+	    if (width < 0 || height < 0 || ((x < 0 && x + width < 0 ) && (y < 0 && y + height < 0))){
+		System.out.println("   -> NOK : commande introuvable");
+		return;
+	    }
 	    addFish(type, x, y, width, height, 0);
-	
-	} else if (parts.length >= 2 && parts[0].equals("delFish")) {
+	}
+	    else if (parts.length == 2 && parts[0].equals("delFish")) {
 	    String type = parts[1];
 	    delFish(type);
-	} else if (parts.length == 2 && parts[0].equals("startFish")) {
+	}  else if (parts.length == 2 && parts[0].equals("startFish")) {
 	    String type = parts[1];
 	    startFish(type);
-	}   
+	} else if (parts.length == 1 && parts[0].equals("status")) {
+		System.out.println("    -> OK : Connecté au contrôleur, " + fishes.size()+ "poissons trouvés");
+		for (Poisson poisson : fishes) {
+		    if (poisson.hasStarted())
+			System.out.println("Fish " + poisson.getType() + "at " + poisson.getX() + "x" + poisson.getY() + "," + poisson.getWidth()+ "x" + poisson.getHeight() + " started");
+		    else
+			System.out.println("Fish " + poisson.getType() + "at " + poisson.getX() + "x" + poisson.getY() + "," + poisson.getWidth()+ "x" + poisson.getHeight() + " notstarted");
+		}
+	    } else if (parts.length == 4 && parts[0].equals("hello")) {
+		ID = parts[3];
+	    } else if (parts.length == 3 && parts[0].equals("greeting")) {
+		Pattern p = Pattern.compile("\\+([0-9]+)\\+([0-9]+)$");
+		Matcher m = p.matcher(parts[2]);
+		if (m.find()) {
+		    VUE_WIDTH = Integer.parseInt(m.group(1));
+		    VUE_HEIGHT = Integer.parseInt(m.group(2));
+		}
+	    } else {
+		System.out.println("   -> NOK : commande introuvable");
+	    }
     }
 
-public void handleResponse(String response) {
-    Pattern pattern = Pattern.compile("\\[([A-Za-z]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
-    Matcher matcher = pattern.matcher(response);
-    while (matcher.find()) {
-        String type = matcher.group(1);
-        int x = Integer.parseInt(matcher.group(2)); // destination X
-        int y = Integer.parseInt(matcher.group(3)); // destination Y
-        int width = Integer.parseInt(matcher.group(4));
-        int height = Integer.parseInt(matcher.group(5));
-        double time = Double.parseDouble(matcher.group(6));
 
-        Poisson p = fishes.stream()
-            .filter(poisson -> poisson.getType().equals(type))
-            .findFirst()
-            .orElse(null);
+    public void handleResponse(String response) {
+	Pattern pattern = Pattern.compile("\\[([A-Za-z]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
+	Matcher matcher = pattern.matcher(response);
+	while (matcher.find()) {
+	    String type = matcher.group(1);
+	    int x = Integer.parseInt(matcher.group(2));
+	    int y = Integer.parseInt(matcher.group(3));
+	    int width = Integer.parseInt(matcher.group(4));
+	    int height = Integer.parseInt(matcher.group(5));
+	    double time = Double.parseDouble(matcher.group(6));
 
-        if (p != null) {
-            p.setDestination((x * 500) / 100, (y * 500) / 100, time);
-        } else {
-            addFish(type, x, y, width, height, time);
-        }
+	    Poisson p = fishes.stream()
+		.filter(poisson -> poisson.getType().equals(type))
+		.findFirst()
+		.orElse(null);
+
+	    if (p != null) {
+		p.setDestination((x * VUE_WIDTH) / 100, (y * VUE_HEIGHT) / 100, time);
+	    } else {
+		addFish(type, x, y, width, height, time);
+	    }
+	}
     }
-}
     
     
     private void setNewDestination(Poisson poisson) {
         // Random rand = new Random();
         // int x = rand.nextInt(100);
         // int y = rand.nextInt(100);
-	// poisson.setDestination((x * 500) / 100, ( y * 500) / 100, 3.0);
-	poisson.setDestination((poisson.getXdest() * 500) / 100, ( poisson.getYdest() * 500) / 100, poisson.getTime());	
+	// poisson.setDestination((x * VUE_WIDTH) / 100, ( y * VUE_HEIGHT) / 100, 3.0);
+	poisson.setDestination((poisson.getXdest() * VUE_WIDTH) / 100, ( poisson.getYdest() * VUE_HEIGHT) / 100, poisson.getTime());	
     }
 
     private void draw(GraphicsContext gc) {
-        gc.clearRect(0, 0, 500, 500);
+        gc.clearRect(0, 0, VUE_WIDTH, VUE_HEIGHT);
 
-        gc.drawImage(backgroundImage, 0, 0, 500, 500);
+        gc.drawImage(backgroundImage, 0, 0, VUE_WIDTH, VUE_HEIGHT);
 
         for (Poisson poisson : fishes) {
             Image imageToDraw = getFishImage(poisson.getType());
