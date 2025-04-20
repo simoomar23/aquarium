@@ -52,7 +52,6 @@ PromptCommand commandTable[] = {
 ClientCommand clientcommande[] = {
     {"hello", cmd_hello},
     {"addFish", cmd_addFish},
-     {"status", cmd_status},
     {"delFish", cmd_delFish},
     {"startFish", cmd_startFish},
     {"getFishes", cmd_getFishes}/*,
@@ -74,8 +73,11 @@ int tokenize(char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]) {
     char *token = strtok(input, " \t\n");
     while (token != NULL && tokenCount < MAX_TOKENS) {
         size = strlen(token);
+        //printf("%s this is token\n",token);
+        //printf("%d size \n",size);
         strncpy(tokens[tokenCount], token, size);
         tokens[tokenCount][size] = '\0';
+        //printf("%s play\n",tokens[tokenCount]);
         tokenCount++;
         token = strtok(NULL, " \t\n");
     }
@@ -328,11 +330,11 @@ void cmd_save(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
 char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
     int var = hello_verification(tokens, tokenCount);
     if (var == -1) {
-        return strdup("no greeting");
+        return strdup("no greeting\n");
     }
     int i = available_view();
     if (i == -1) {
-        return strdup("no greeting");
+        return strdup("no greeting\n");
     }
 
     int greeting_num ;
@@ -348,7 +350,7 @@ char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCoun
 
     char *result = malloc(40);
     if (result == NULL) {
-        return strdup("error allocating memory");
+        return strdup("error allocating memory\n");
     }
     view  v = get_view(greeting_num);
     snprintf(result, 40, "greeting N%d %dx%d+%d+%d\n", greeting_num,v.x,v.y,v.width,v.length);
@@ -360,21 +362,24 @@ char * cmd_hello(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCoun
 
 char * cmd_addFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
     if(add_fish_verification(tokens,tokenCount)){
-        return "NOK : commande introuvable ou paramétres insupportables";
+        return "NOK : commande introuvable ou paramétres insupportables\n";
     }
 	int x;
 	int y;
 	int width;
 	int length;
-    if(strcmp(tokens[5],"RandomWayPoint"))
-        return "NOK : modèle de mobilité non supporté";
+    int c;
+    if((c = strcmp(tokens[5],"RandomWayPoint"))){
+       // printf("token is %s ad  is : %d\n",tokens[5],c);
+        return "NOK : modèle de mobilité non supporté\n";
+    }
     sscanf(tokens[3],"%dx%d,",&x,&y);
     sscanf(tokens[4],"%dx%d,",&length,&width);
     if(add_fish(tokens[1],x,y,length,width,RandomPathWay,get_id_of_fd(fd)))
-        return "NOK : poisson existe déja dans l'aquarium";
-    return "OK";
+        return "NOK : poisson existe déja dans l'aquarium\n";
+    return "OK\n";
 }
-char *cmd_status(int fd, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
+/*char *cmd_status(int fd, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount) {
     if(tokenCount ==1 && strcmp(tokens[0],"status")==0){
     int count = 0;
     poisson *fishes = getFishes(get_id_of_fd(fd), &count); 
@@ -427,25 +432,25 @@ char *cmd_status(int fd, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCou
     }
     return "NOK : commande introuvable";
 }
-
+*/
 
 
 
 char * cmd_delFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
     if(tokenCount == 2){
     if(del_fish(tokens[1],get_id_of_fd(fd)))
-        return "NOK : poisson inexistant";
+        return "NOK : poisson inexistant\n";
     return "OK";
     }
-    return "NOK : commande introuvable";
+    return "NOK : commande introuvable\n";
 }
 char * cmd_startFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
     if(tokenCount == 2){
         if(start_fish(tokens[1],get_id_of_fd(fd)))
-            return "NOK : poisson inexistant";
-        return "OK";
+            return "NOK : poisson inexistant\n";
+        return "OK\n";
     }
-     return "NOK : commande introuvable";
+     return "NOK : commande introuvable\n";
 }
 char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute__((unused)), int tokenCount __attribute__((unused))){
     int count = 0;
@@ -462,11 +467,12 @@ char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute
 
     for (int i = 0; i < count; i++) {
         char line[256];
+        printf("this the name :::: %s\n",fishes[i].name);
         snprintf(line, sizeof(line), "[%s at %dx%d,%dx%d,%d]\n",
                  fishes[i].name,
-                 fishes[i].coord.x, fishes[i].coord.y,
+                 fishes[i].coord_f.x, fishes[i].coord_f.y,
                  fishes[i].width, fishes[i].length,
-                 TIME);
+                 fishes[i].temps);
 
         if (strlen(result) + strlen(line) + 1 > bufferSize) {
             bufferSize *= 2;
@@ -505,8 +511,8 @@ char* handle_client_command(int fd,char *input) {
     char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH];
     int tokenCount = tokenize(input, tokens);
     if (tokenCount == 0) return "\n";
-    size_t size = strlen(tokens[tokenCount-1]);
-    tokens[tokenCount-1][size-1]=0;
+    /*size_t size = strlen(tokens[tokenCount-1]);
+    tokens[tokenCount-1][size-1]=0;*/
     //printf("oooos %s\n",tokens[0]);
     for (long unsigned int i = 0; i < CLIENT_COMMAND_COUNT; i++) {
         int c= strcmp(tokens[0], clientcommande[i].name);

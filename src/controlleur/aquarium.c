@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-
+#include <string.h>
 
 aquarium * my_aquarium;
 
@@ -96,15 +96,18 @@ int add_fish(char *name , int x , int y, int length, int width, coord (*mobility
 	if(index == -1)
 		return 1;
 	poisson poisson;
-	poisson.name = name;
+	strcpy(poisson.name,name);
 	poisson.length =length;
 	poisson.width = width;
-	poisson.coord.x= (my_views.all_views[index].length * x )/HUNDRED + my_views.all_views[index].x;
-	poisson.coord.y =(my_views.all_views[index].width * y )/HUNDRED + my_views.all_views[index].y;
+	poisson.coord_d.x= (my_views.all_views[index].length * x )/HUNDRED + my_views.all_views[index].x;
+	poisson.coord_d.y =(my_views.all_views[index].width * y )/HUNDRED + my_views.all_views[index].y;
+	poisson.coord_f.x = poisson.coord_d.x;
+	poisson.coord_f.y = poisson.coord_d.y;
+	poisson.temps = 0;
+	gettimeofday(&(poisson.tv),NULL);
 	poisson.status = NOTSTARTED;
 	poisson.mobility = mobility;
-	assert(!set__add_head(my_aquarium->fishs,poisson)); 
-	return 0;
+	return set__add_head(my_aquarium->fishs,poisson); 
 
 }
 

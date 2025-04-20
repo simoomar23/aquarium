@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include "command.h"
 #include "log_file.h"
-#include "./config/config.h"
+#include "config.h"
 
 #define MAX_CLIENTS 7
 
@@ -33,7 +33,7 @@ int set_non_blocking(int socket) {
 	return 0;
 }
 
-int main(int argc,char*argv[]) {
+int main(int argc , char * argv[]) {
 	Config config;
 
 	//start LOG FILE	
@@ -75,7 +75,8 @@ int main(int argc,char*argv[]) {
    memset(&serverAddr, 0, sizeof(serverAddr)); // Initilalize server structure to zeros
    serverAddr.sin_family = AF_INET;
    //serverAddr.sin_port = htons(atoi(argv[1])) ; // user provided
-   serverAddr.sin_port = get_controller_port(&config);
+   //printf("%d",get_controller_port(&config));
+   serverAddr.sin_port = htons(get_controller_port(&config));
    serverAddr.sin_addr.s_addr = INADDR_ANY;  // Bind to all available interfaces
 
 
@@ -214,6 +215,7 @@ int main(int argc,char*argv[]) {
 					memset(clientBuffer, 0, sizeof(clientBuffer));
 
 					int bytesReceived = recv(sd, clientBuffer, sizeof(clientBuffer) - 1, 0);
+					//printf("%s\n",clientBuffer);
 
 					if (bytesReceived <= 0) {
 						// Connection closed or error
@@ -231,8 +233,9 @@ int main(int argc,char*argv[]) {
 						clientBuffer[bytesReceived] = '\0';
 
 						log_message(LOG_DEBUG, "Received from client %d: %s", sd, clientBuffer);
-						
+						//printf("mal zaml bolk\n");
 						char * response = handle_client_command(sd,clientBuffer);
+						//printf("%s\n",response);
 						if (send(sd, response, strlen(response), 0) == -1) {
 							perror("send failed");
 							log_message(LOG_ERROR, "send failed to client %d: %s", sd, strerror(errno));

@@ -70,14 +70,20 @@ int set__remove(struct set *s,poisson poisson) {
   return 0;
 }
 
-int in_helper(int x1,int y1,int x,int y,int length,int width){ 
-  return (x <x1 && x1 < x+length) &&  (y <y1 && y1 < y+width);
+
+int in_d(poisson poisson,int x,int y,int length,int width){
+	return in_helper(poisson.coord_d.x,poisson.coord_d.y,x,y,length,width) || \
+  in_helper(poisson.coord_d.x + poisson.length,poisson.coord_d.y,x,y,length,width) || \
+  in_helper(poisson.coord_d.x,poisson.coord_d.y + poisson.width,x,y,length,width) || \
+  in_helper(poisson.coord_d.x + poisson.length,poisson.coord_d.y+poisson.width,x,y,length,width) ;
+
 }
-int in(poisson poisson,int x,int y,int length,int width){
-	return in_helper(poisson.coord.x,poisson.coord.y,x,y,length,width) || \
-  in_helper(poisson.coord.x + poisson.length,poisson.coord.y,x,y,length,width) || \
-  in_helper(poisson.coord.x,poisson.coord.y + poisson.width,x,y,length,width) || \
-  in_helper(poisson.coord.x + poisson.length,poisson.coord.y+poisson.width,x,y,length,width) ;
+
+int in_f(poisson poisson,int x,int y,int length,int width){
+	return in_helper(poisson.coord_f.x,poisson.coord_f.y,x,y,length,width) || \
+  in_helper(poisson.coord_f.x + poisson.length,poisson.coord_f.y,x,y,length,width) || \
+  in_helper(poisson.coord_f.x,poisson.coord_f.y + poisson.width,x,y,length,width) || \
+  in_helper(poisson.coord_f.x + poisson.length,poisson.coord_f.y+poisson.width,x,y,length,width) ;
 
 }
 
@@ -86,11 +92,12 @@ struct set * get_fishes_in_view(struct set * fishes ,int x,int y,int length,int 
 	struct lelement *e = fishes->l->head;
 	struct set * fishes_in = set__empty();
 	for(int i=0;i<fishes->size;i++){
-		if(in(e->poisson,x,y,length,width)){
-			e->poisson.coord = e->poisson.mobility(e->poisson.coord);
+		if(in_d(e->poisson,x,y,length,width)){
+		  int time = prepare(&(e->poisson));
 			poisson poisson = e->poisson;
-			poisson.coord.x = ((poisson.coord.x -x)*HUNDRED)/length;
-			poisson.coord.y = ((poisson.coord.y -y)*HUNDRED)/width;
+			poisson.coord_f.x = ((poisson.coord_f.x -x)*HUNDRED)/length;
+			poisson.coord_f.y = ((poisson.coord_f.y -y)*HUNDRED)/width;
+      poisson.temps = time;
 			assert(!set__add_head(fishes_in,poisson));
 		}
     e = e->next;

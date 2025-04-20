@@ -11,7 +11,7 @@ int is_id(char * id){
         return 0;
     char * end;
     int number = strtol(&id[1],&end,10);
-    printf("%d\n",number);
+    //printf("%d\n",number);
     return *end == 0 ? number : 0;
 }
 
