@@ -26,9 +26,9 @@ char * cmd_delFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCo
 char * cmd_startFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 /*char * cmd_ls(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
+char * cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);*/
 char * cmd_ping(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);*/
+char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 
 typedef struct {
     char *name;
@@ -54,11 +54,12 @@ ClientCommand clientcommande[] = {
     {"addFish", cmd_addFish},
     {"delFish", cmd_delFish},
     {"startFish", cmd_startFish},
-    {"getFishes", cmd_getFishes}/*,
+    {"getFishes", cmd_getFishes},
+    {"log", cmd_log},/*,
     {"ls", cmd_ls},
     {"getFishesContinuously", cmd_getFishesContinuously},
-    {"log", cmd_log},
-    {"ping", cmd_ping}*/
+    */
+    {"ping", cmd_ping}
 };
 
 int command_length;
@@ -507,12 +508,29 @@ char * cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH
 char * cmd_ping(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);*/
 
+char* cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
+    if (strcmp(tokens[1],"out") || tokenCount != 2){
+        return "NOK : commande introuvable\n";
+    }
+    changeavailable(get_id_of_fd(fd),fd);
+    return "bye\n";
+}
+
+char * cmd_ping(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
+    char *result = malloc(20);
+    if (result == NULL) {
+        return strdup("error allocating memory\n");
+    }
+    snprintf(result ,20,"pong %d\n",get_id_of_fd(fd));
+    return result;
+}
+
 char* handle_client_command(int fd,char *input) {
     char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH];
     int tokenCount = tokenize(input, tokens);
     if (tokenCount == 0) return "\n";
-    /*size_t size = strlen(tokens[tokenCount-1]);
-    tokens[tokenCount-1][size-1]=0;*/
+    size_t size = strlen(tokens[tokenCount-1]);
+    tokens[tokenCount-1][size-1]=0;
     //printf("oooos %s\n",tokens[0]);
     for (long unsigned int i = 0; i < CLIENT_COMMAND_COUNT; i++) {
         int c= strcmp(tokens[0], clientcommande[i].name);
@@ -526,3 +544,4 @@ char* handle_client_command(int fd,char *input) {
     }
     return "NOK : invalid commande\n";
 }
+

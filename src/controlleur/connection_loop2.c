@@ -74,9 +74,9 @@ int main(int argc , char * argv[]) {
    // Bind
    memset(&serverAddr, 0, sizeof(serverAddr)); // Initilalize server structure to zeros
    serverAddr.sin_family = AF_INET;
-   //serverAddr.sin_port = htons(atoi(argv[1])) ; // user provided
+   serverAddr.sin_port = htons(atoi(argv[1])) ; // user provided
    //printf("%d",get_controller_port(&config));
-   serverAddr.sin_port = htons(get_controller_port(&config));
+   //serverAddr.sin_port = htons(get_controller_port(&config));
    serverAddr.sin_addr.s_addr = INADDR_ANY;  // Bind to all available interfaces
 
 
@@ -236,11 +236,16 @@ int main(int argc , char * argv[]) {
 						//printf("mal zaml bolk\n");
 						char * response = handle_client_command(sd,clientBuffer);
 						//printf("%s\n",response);
+						//printf("client buffer : %s\n",clientBuffer);
 						if (send(sd, response, strlen(response), 0) == -1) {
 							perror("send failed");
 							log_message(LOG_ERROR, "send failed to client %d: %s", sd, strerror(errno));
 						} else {
 							log_message(LOG_DEBUG, "Response sent to client %d", sd);
+							if (!strcmp(response,"bye\n")) {
+								close(sd);
+								clientSocket[i] = 0;
+							}
 						}
 						//free(response);
 					}
