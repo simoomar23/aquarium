@@ -9,8 +9,8 @@ class Poisson {
         this.y = y;
         this.width = width;
         this.height = height;
-        this.x_destination = x;
-        this.y_destination = y;
+        this.x_destination = -1;
+        this.y_destination = -1;
         this.remainingTime = remainingTime;
 	this.type = type;
 	this.isStarted = false;

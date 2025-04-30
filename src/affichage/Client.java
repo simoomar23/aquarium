@@ -7,15 +7,17 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Client extends Application {
-    static final int port = 9090;
+    static final int port = 9092;
     private PrintWriter pred;
     private BufferedReader plec;
     private AquariumApp app;
     private static String id;
+    private static String adress;
     BlockingQueue<String> okQueue = new LinkedBlockingQueue<>();
     
     public static void main(String[] args) {
         id = args[1];
+	adress = args[0];
         launch(args);
     }
 
@@ -33,8 +35,9 @@ public class Client extends Application {
         }).start();
     }
 
-public int startClient(String serverAddress) throws IOException {
-    Socket socket = new Socket(serverAddress, port);
+public int startClient(String serverAddress
+		       ) throws IOException {
+    Socket socket = new Socket(adress, port);
     plec = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     pred = new PrintWriter(socket.getOutputStream(), true);
     String connexion = "hello in as " + id;
@@ -42,7 +45,6 @@ public int startClient(String serverAddress) throws IOException {
     String greeting = plec.readLine();
     System.out.println("    > " + greeting);
     javafx.application.Platform.runLater(() -> app.handleCommand(connexion));
-    javafx.application.Platform.runLater(() -> app.handleCommand(greeting));    
     new Thread(() -> {
         try {
             String serverResponse;
@@ -50,6 +52,7 @@ public int startClient(String serverAddress) throws IOException {
 		System.out.println("   > " + serverResponse);
                 
                 if (serverResponse.startsWith("list")) {
+		    System.out.println("sssssssssssss");
                     handleListResponse(serverResponse);
                 } else if (serverResponse.startsWith("OK")) {
 		    try {

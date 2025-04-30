@@ -36,7 +36,8 @@ public class AquariumApp extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
         for (Poisson poisson : fishes) {
-            setNewDestination(poisson);
+	    poisson.setDestination(poisson.getXdest(), poisson.getYdest(), poisson.getTime());			    
+	    //            setNewDestination(poisson);
         }
 
         AnimationTimer timer = new AnimationTimer() {
@@ -54,8 +55,11 @@ public class AquariumApp extends Application {
 
 		    for (Poisson poisson : fishes) {
 			poisson.updatePosition(elapsedSeconds);
+			//			System.out.println("x : " + (poisson.getX() * 500) / 100 +  ", x_dest : " + (poisson.getXdest() * 500) / 100);
 			if (!poisson.hasReachedDestination()) {
-			    setNewDestination(poisson);
+			    //			    System.out.println("Test");
+			    poisson.setDestination(poisson.getXdest(), poisson.getYdest(), poisson.getTime());					    
+			    //			    setNewDestination(poisson);
 			}
 		    }
 
@@ -130,9 +134,12 @@ public class AquariumApp extends Application {
 
 
     public void handleResponse(String response) {
-	Pattern pattern = Pattern.compile("\\[([A-Za-z]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
+	//	Pattern pattern = Pattern.compile("\\[([A-Za-z]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
+	Pattern pattern = Pattern.compile(".*\\[([A-Za-z0-9]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
 	Matcher matcher = pattern.matcher(response);
+	System.out.println("cccccccccccccc");	
 	while (matcher.find()) {
+	    System.out.println("ddddddddddddd");		    
 	    String type = matcher.group(1);
 	    int x = Integer.parseInt(matcher.group(2));
 	    int y = Integer.parseInt(matcher.group(3));
@@ -144,10 +151,12 @@ public class AquariumApp extends Application {
 		.filter(poisson -> poisson.getType().equals(type))
 		.findFirst()
 		.orElse(null);
-
 	    if (p != null) {
+		//		System.out.println("x : " + x + " y : " + y);
 		p.setDestination((x * VUE_WIDTH) / 100, (y * VUE_HEIGHT) / 100, time);
+		System.out.println("x : " + p.getX() + " y : " + p.getY() + "x_dest : " + p.getXdest() + " y_dest : " + p.getYdest());
 	    } else {
+		System.out.println("bbbbbbbbbbbbbb");		
 		addFish(type, x, y, width, height, time);
 	    }
 	}
@@ -159,7 +168,8 @@ public class AquariumApp extends Application {
         // int x = rand.nextInt(100);
         // int y = rand.nextInt(100);
 	// poisson.setDestination((x * VUE_WIDTH) / 100, ( y * VUE_HEIGHT) / 100, 3.0);
-	poisson.setDestination((poisson.getXdest() * VUE_WIDTH) / 100, ( poisson.getYdest() * VUE_HEIGHT) / 100, poisson.getTime());	
+	//	poisson.setDestination((poisson.getXdest() * VUE_WIDTH) / 100, ( poisson.getYdest() * VUE_HEIGHT) / 100, poisson.getTime());
+	poisson.setDestination(poisson.getXdest(), poisson.getYdest(), poisson.getTime());		
     }
 
     private void draw(GraphicsContext gc) {
