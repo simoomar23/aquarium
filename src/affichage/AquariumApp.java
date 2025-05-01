@@ -114,9 +114,9 @@ public class AquariumApp extends Application {
 		System.out.println("    -> OK : Connecté au contrôleur, " + fishes.size()+ "poissons trouvés");
 		for (Poisson poisson : fishes) {
 		    if (poisson.hasStarted())
-			System.out.println("Fish " + poisson.getType() + "at " + poisson.getX() + "x" + poisson.getY() + "," + poisson.getWidth()+ "x" + poisson.getHeight() + " started");
+			System.out.println("Fish " + poisson.getType() + " at " + (poisson.getX() * 100) / 500 + "x" + (poisson.getY() * 100) /500 + "," + (poisson.getWidth() * 100 ) / 500 + "x" + (poisson.getHeight() * 100 ) / 500 + " started");
 		    else
-			System.out.println("Fish " + poisson.getType() + "at " + poisson.getX() + "x" + poisson.getY() + "," + poisson.getWidth()+ "x" + poisson.getHeight() + " notstarted");
+			System.out.println("Fish " + poisson.getType() + " at " + (poisson.getX() * 100) / 500 + "x" + (poisson.getY() * 100) /500 + "," + (poisson.getWidth() * 100 ) / 500 + "x" + (poisson.getHeight() * 100 ) / 500 + " notstarted");		  
 		}
 	    } else if (parts.length == 4 && parts[0].equals("hello")) {
 		ID = parts[3];
@@ -137,9 +137,9 @@ public class AquariumApp extends Application {
 	//	Pattern pattern = Pattern.compile("\\[([A-Za-z]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
 	Pattern pattern = Pattern.compile(".*\\[([A-Za-z0-9]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
 	Matcher matcher = pattern.matcher(response);
-	System.out.println("cccccccccccccc");	
+	//	System.out.println("cccccccccccccc");	
 	while (matcher.find()) {
-	    System.out.println("ddddddddddddd");		    
+	    //	    System.out.println("ddddddddddddd");		    
 	    String type = matcher.group(1);
 	    int x = Integer.parseInt(matcher.group(2));
 	    int y = Integer.parseInt(matcher.group(3));
@@ -154,9 +154,9 @@ public class AquariumApp extends Application {
 	    if (p != null) {
 		//		System.out.println("x : " + x + " y : " + y);
 		p.setDestination((x * VUE_WIDTH) / 100, (y * VUE_HEIGHT) / 100, time);
-		System.out.println("x : " + p.getX() + " y : " + p.getY() + "x_dest : " + p.getXdest() + " y_dest : " + p.getYdest());
+		//		System.out.println("x : " + p.getX() + " y : " + p.getY() + "x_dest : " + p.getXdest() + " y_dest : " + p.getYdest());
 	    } else {
-		System.out.println("bbbbbbbbbbbbbb");		
+		//		System.out.println("bbbbbbbbbbbbbb");		
 		addFish(type, x, y, width, height, time);
 	    }
 	}

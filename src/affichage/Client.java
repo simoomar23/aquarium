@@ -52,7 +52,7 @@ public int startClient(String serverAddress
 		System.out.println("   > " + serverResponse);
                 
                 if (serverResponse.startsWith("list")) {
-		    System.out.println("sssssssssssss");
+		    //		    System.out.println("sssssssssssss");
                     handleListResponse(serverResponse);
                 } else if (serverResponse.startsWith("OK")) {
 		    try {
@@ -77,8 +77,9 @@ public int startClient(String serverAddress
 	}
 	else if (command.startsWith("status"))
 	    javafx.application.Platform.runLater(() -> app.handleCommand(command));			    
-	else {
+	else {	    
         pred.println(command);
+    if (command.startsWith("addFish") || command.startsWith("delFish") || command.startsWith("startFish")) {
 	String ok = null;
 	try {
 	    ok = okQueue.take();
@@ -86,9 +87,10 @@ public int startClient(String serverAddress
 	    e.printStackTrace();
 	}
         if (ok.equals("OK")) {
-	    System.out.println(command);
+	    //	    System.out.println(command);
             javafx.application.Platform.runLater(() -> app.handleCommand(command));
         }
+    }
 	}
     }
     socket.close();
