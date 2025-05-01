@@ -55,6 +55,9 @@ public class AquariumApp extends Application {
 
 		    for (Poisson poisson : fishes) {
 			poisson.updatePosition(elapsedSeconds);
+			// System.out.println("Time : " + poisson.getTime());
+			// System.out.println(poisson.getX() == poisson.getXdest());
+			// System.out.println(poisson.getY() == poisson.getYdest());			
 			//			System.out.println("x : " + (poisson.getX() * 500) / 100 +  ", x_dest : " + (poisson.getXdest() * 500) / 100);
 			if (!poisson.hasReachedDestination()) {
 			    //			    System.out.println("Test");
@@ -134,8 +137,8 @@ public class AquariumApp extends Application {
 
 
     public void handleResponse(String response) {
-	//	Pattern pattern = Pattern.compile("\\[([A-Za-z]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
-	Pattern pattern = Pattern.compile(".*\\[([A-Za-z0-9]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
+		Pattern pattern = Pattern.compile("\\[([A-Za-z]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
+	//	Pattern pattern = Pattern.compile(".*\\[([A-Za-z0-9]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
 	Matcher matcher = pattern.matcher(response);
 	//	System.out.println("cccccccccccccc");	
 	while (matcher.find()) {
@@ -156,8 +159,12 @@ public class AquariumApp extends Application {
 		p.setDestination((x * VUE_WIDTH) / 100, (y * VUE_HEIGHT) / 100, time);
 		//		System.out.println("x : " + p.getX() + " y : " + p.getY() + "x_dest : " + p.getXdest() + " y_dest : " + p.getYdest());
 	    } else {
-		//		System.out.println("bbbbbbbbbbbbbb");		
+		//		System.out.println("bbbbbbbbbbbbbb");
 		addFish(type, x, y, width, height, time);
+		Poisson pn = fishes.stream()
+		    .filter(poisson -> poisson.getType().equals(type))
+		    .findFirst().orElse(null);
+		pn.startFish();	
 	    }
 	}
     }
