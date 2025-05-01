@@ -215,7 +215,7 @@ int main(int argc , char * argv[]) {
 					memset(clientBuffer, 0, sizeof(clientBuffer));
 
 					int bytesReceived = recv(sd, clientBuffer, sizeof(clientBuffer) - 1, 0);
-					//printf("%s\n",clientBuffer);
+					printf("%s\n",clientBuffer);
 
 					if (bytesReceived <= 0) {
 						// Connection closed or error
@@ -235,7 +235,7 @@ int main(int argc , char * argv[]) {
 						log_message(LOG_DEBUG, "Received from client %d: %s", sd, clientBuffer);
 						//printf("mal zaml bolk\n");
 						char * response = handle_client_command(sd,clientBuffer);
-						//printf("%s\n",response);
+						printf("%s\n",response);
 						//printf("client buffer : %s\n",clientBuffer);
 						if (send(sd, response, strlen(response), 0) == -1) {
 							perror("send failed");

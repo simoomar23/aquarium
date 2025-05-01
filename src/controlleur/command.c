@@ -529,8 +529,8 @@ char* handle_client_command(int fd,char *input) {
     char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH];
     int tokenCount = tokenize(input, tokens);
     if (tokenCount == 0) return "\n";
-    size_t size = strlen(tokens[tokenCount-1]);
-    tokens[tokenCount-1][size-1]=0;
+    /*size_t size = strlen(tokens[tokenCount-1]);
+    tokens[tokenCount-1][size-1]=0;*/
     //printf("oooos %s\n",tokens[0]);
     for (long unsigned int i = 0; i < CLIENT_COMMAND_COUNT; i++) {
         int c= strcmp(tokens[0], clientcommande[i].name);
