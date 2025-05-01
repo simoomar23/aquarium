@@ -137,7 +137,8 @@ public class AquariumApp extends Application {
 
 
     public void handleResponse(String response) {
-		Pattern pattern = Pattern.compile("\\[([A-Za-z]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
+	Pattern pattern = Pattern.compile("\\[([A-Za-z0-9]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
+       
 	//	Pattern pattern = Pattern.compile(".*\\[([A-Za-z0-9]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
 	Matcher matcher = pattern.matcher(response);
 	//	System.out.println("cccccccccccccc");	
