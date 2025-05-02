@@ -20,12 +20,6 @@ void initialize_aquarium(int length,int width,view all_views[],int size){
 	my_aquarium->fishs = set__empty();
 	for(int i=0;i<size;i++){
 		my_views.all_views[i] = all_views[i];
-		my_views.all_views[i].x = all_views[i].x;
-		my_views.all_views[i].y = all_views[i].y;
-		my_views.all_views[i].length = all_views[i].length;
-		my_views.all_views[i].width = all_views[i].width;
-
-
 	}
 	my_views.size = size;
 
@@ -97,8 +91,8 @@ int add_fish(char *name , int x , int y, int length, int width, coord (*mobility
 		return 1;
 	poisson poisson;
 	strcpy(poisson.name,name);
-	poisson.length =length;
-	poisson.width = width;
+	poisson.length =(my_views.all_views[index].length * length )/HUNDRED;
+	poisson.width = (my_views.all_views[index].width * width )/HUNDRED;
 	poisson.coord_d.x= (my_views.all_views[index].length * x )/HUNDRED + my_views.all_views[index].x;
 	poisson.coord_d.y =(my_views.all_views[index].width * y )/HUNDRED + my_views.all_views[index].y;
 	poisson.coord_f.x = poisson.coord_d.x;
@@ -115,7 +109,7 @@ poisson get_fish_by_name(char * name,int view_id){
 	poisson poisson;
 	int index = find_view(view_id);
 	if(index != -1){
-	struct set * view_fishes = get_fishes_in_view(my_aquarium->fishs,my_views.all_views[index].x,my_views.all_views[index].y,\
+	struct set * view_fishes = get_fishes_in(my_aquarium->fishs,my_views.all_views[index].x,my_views.all_views[index].y,\
 	 									my_views.all_views[index].length,my_views.all_views[index].width);
 	struct lelement * elem = set__find(view_fishes,name);
 	if (elem ==NULL){

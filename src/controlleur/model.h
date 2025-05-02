@@ -2,7 +2,7 @@
 #define MODEL_H
 
 #include <sys/time.h>
-#define MAX_STEP 5
+#define MAX_STEP 100
 
 
 
@@ -37,7 +37,7 @@ coord RandomPathWay(coord corrdon);
 
 int in_helper(int x1,int y1,int x,int y,int length,int width);
 
-int  prepare(poisson * poisson);
+void prepare(poisson * poisson);
 
 
 

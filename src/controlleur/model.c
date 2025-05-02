@@ -25,16 +25,20 @@ coord RandomPathWay(coord coordon){
 	return new_coord;
 }
 
-int  prepare(poisson * poisson){
+void prepare(poisson * poisson){
 	struct timeval tv1;
 	gettimeofday(&tv1,NULL);
-	if((tv1.tv_sec - poisson->tv.tv_sec)> poisson->temps){
+	int time = tv1.tv_sec - poisson->tv.tv_sec;
+	if(time> poisson->temps){
+		printf("aaaaa %d\n",poisson->coord_f.x);
 		poisson->coord_d = poisson->coord_f;
 		poisson->coord_f = poisson->mobility(poisson->coord_f);
-
+		printf("bbbb %d\n",poisson->coord_f.x);
 		gettimeofday(&(poisson->tv),NULL);
-		return 5;
+		poisson->temps = 5;
 		
 	}
-	return tv1.tv_sec - poisson->tv.tv_sec;
+	else {
+		poisson->temps = time;
+	}
 }

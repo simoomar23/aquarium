@@ -92,18 +92,34 @@ struct set * get_fishes_in_view(struct set * fishes ,int x,int y,int length,int 
 	struct lelement *e = fishes->l->head;
 	struct set * fishes_in = set__empty();
 	for(int i=0;i<fishes->size;i++){
-		if(in_d(e->poisson,x,y,length,width)){
-		  int time = prepare(&(e->poisson));
+		if(in_f(e->poisson,x,y,length,width)){
+		  prepare(&(e->poisson));
 			poisson poisson = e->poisson;
 			poisson.coord_f.x = ((poisson.coord_f.x -x)*HUNDRED)/length;
+      printf("ssss %d \n",poisson.coord_f.x);
 			poisson.coord_f.y = ((poisson.coord_f.y -y)*HUNDRED)/width;
-      poisson.temps = time;
+      poisson.length = (poisson.length*HUNDRED)/length;
+      poisson.width = (poisson.width*HUNDRED)/width;  
 			assert(!set__add_head(fishes_in,poisson));
 		}
     e = e->next;
 	}
 	return fishes_in;
 }
+
+struct set * get_fishes_in(struct set * fishes ,int x,int y,int length,int width){
+	struct lelement *e = fishes->l->head;
+	struct set * fishes_in = set__empty();
+	for(int i=0;i<fishes->size;i++){
+		if(in_f(e->poisson,x,y,length,width)){
+			poisson poisson = e->poisson;
+			assert(!set__add_head(fishes_in,poisson));
+		}
+    e = e->next;
+	}
+	return fishes_in;
+}
+
 
 void free_set(struct set *s) {
     while (s->l->head != NULL) {
