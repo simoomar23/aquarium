@@ -60,9 +60,10 @@ public int startClient(String serverAddress
 		    } catch (InterruptedException e) {
 			e.printStackTrace();
 		    }		   
-		}
+		}   else if (serverResponse.startsWith("bye")) {
+		    break;
             }
-        } catch (IOException e) {
+	    } }catch (IOException e) {
             e.printStackTrace();
         }
     }).start();
