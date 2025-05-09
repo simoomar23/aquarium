@@ -137,9 +137,8 @@ public class AquariumApp extends Application {
 
 
     public void handleResponse(String response) {
-	Pattern pattern = Pattern.compile("\\[([A-Za-z0-9]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
-       
-	//	Pattern pattern = Pattern.compile(".*\\[([A-Za-z0-9]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
+	// Pattern pattern = Pattern.compile("\\[([A-Za-z0-9]+) at (\\d+)x(\\d+),(\\d+)x(\\d+),(\\d+)\\]");
+	Pattern pattern = Pattern.compile("\\[([A-Za-z0-9]+) at (-?\\d+)x(-?\\d+),(-?\\d+)x(-?\\d+),(\\d+)\\]");
 	Matcher matcher = pattern.matcher(response);
 	//	System.out.println("cccccccccccccc");	
 	while (matcher.find()) {
@@ -160,6 +159,11 @@ public class AquariumApp extends Application {
 		p.setDestination((x * VUE_WIDTH) / 100, (y * VUE_HEIGHT) / 100, time);
 		//		System.out.println("x : " + p.getX() + " y : " + p.getY() + "x_dest : " + p.getXdest() + " y_dest : " + p.getYdest());
 	    } else {
+		if (width < 0 || height < 0 || ((x < 0 && x + width < 0 ) && (y < 0 && y + height < 0))) {
+		    System.out.println("   -> NOK : poisson hors zone");
+		    continue;
+		}
+		
 		//		System.out.println("bbbbbbbbbbbbbb");
 		addFish(type, x, y, width, height, time);
 		Poisson pn = fishes.stream()
