@@ -1,3 +1,4 @@
+import javafx.scene.image.Image;
 class Poisson {
     private double x, y, x_destination, y_destination;
     private int width, height;
@@ -6,7 +7,7 @@ class Poisson {
     private boolean isStarted;
     private double startX, startY;
     private double totalTimeElapsed = 0, totalTime;
-    
+    private Image image;
 
     public Poisson(int x, int y, int width, int height, String type, double remainingTime) {
         this.x = x;
@@ -64,6 +65,14 @@ public void updatePosition(double time) {
 
     public boolean hasStarted() {
 	return (this.isStarted);
+    }
+    
+    public void setImage(Image image) {
+	this.image = image;
+    }
+    
+    public Image getImage() {
+	return image;
     }
 
     public int getX() { return (int)x; }

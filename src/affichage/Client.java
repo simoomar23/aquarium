@@ -7,7 +7,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Client extends Application {
-    static final int port = 9091;
+    static final int port = 9092;
     private PrintWriter pred;
     private BufferedReader plec;
     private AquariumApp app;
@@ -28,45 +28,58 @@ public class Client extends Application {
 
         new Thread(() -> {
             try {
-                startClient("localhost");
+		//                startClient("localhost");
+		startClient(primaryStage);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }).start();
     }
 
-public int startClient(String serverAddress
-		       ) throws IOException {
+public int startClient(Stage primaryStage) throws IOException {
     Socket socket = new Socket(adress, port);
     plec = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     pred = new PrintWriter(socket.getOutputStream(), true);
-    String connexion = "hello in as N" + id;
+    String connexion = "hello in as " + id;
     pred.println(connexion);
     String greeting = plec.readLine();
     System.out.println("    > " + greeting);
     javafx.application.Platform.runLater(() -> app.handleCommand(connexion));
+    pred.println("getFishesContinuously");
+    
     new Thread(() -> {
         try {
             String serverResponse;
             while ((serverResponse = plec.readLine()) != null) {
-		System.out.println("   > " + serverResponse);
+                System.out.println("   > " + serverResponse);
                 
                 if (serverResponse.startsWith("list")) {
-		    //		    System.out.println("sssssssssssss");
                     handleListResponse(serverResponse);
                 } else if (serverResponse.startsWith("OK")) {
-		    try {
-			okQueue.put("OK");
-		    } catch (InterruptedException e) {
-			e.printStackTrace();
-		    }		   
-		}   else if (serverResponse.startsWith("bye")) {
-		    break;
+                    try {
+                        okQueue.put("OK");
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else if (serverResponse.startsWith("bye")) {
+                    // Fermer la connexion
+                    pred.close();
+                    plec.close();
+                    socket.close();
+                    System.out.println("Disconnected from server.");
+
+                    javafx.application.Platform.runLater(() -> primaryStage.close());
+		    //                    break;
+		    System.exit(0);
+    
+                }
             }
-	    } }catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }).start();
+    
+    // Reste de ton code pour la gestion des commandes du client
 
     Scanner scanner = new Scanner(System.in);
     while (true) {

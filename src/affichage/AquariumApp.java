@@ -16,9 +16,9 @@ public class AquariumApp extends Application {
     private String ID;
     private ArrayList<Poisson> fishes = new ArrayList<>(); 
 
-    private Image poissonImage1 = new Image("images/poisson1.png");
-    private Image poissonImage2 = new Image("images/poisson2.png");
-    private Image poissonImage3 = new Image("images/poisson3.png");
+    private Image poissonImage1 = new Image("images/PoissonNain.png");
+    private Image poissonImage2 = new Image("images/PoissonRouge.png");
+    private Image poissonImage3 = new Image("images/PoissonClown.png");
 
     private Image backgroundImage = new Image("images/aquarium_background.png");
 
@@ -75,8 +75,23 @@ public class AquariumApp extends Application {
     private void addFish(String type, int x, int y, int width, int height, double remainingTime) {
         Poisson newFish = new Poisson((x * VUE_WIDTH) / 100, (y * VUE_HEIGHT) /100, (width * VUE_WIDTH) / 100, ( height * VUE_HEIGHT ) / 100, type, remainingTime);
 	newFish.setDestination((x * VUE_WIDTH) / 100, (y * VUE_HEIGHT) / 100, remainingTime);
+	newFish.setImage(loadFishImage(type));	
         fishes.add(newFish);
     }
+
+    private Image loadFishImage(String type) {
+	//	String baseName = type.split("_")[0];
+	String baseName = type.split("[_\\d]")[0];
+	
+	try {
+	    return new Image("images/" + baseName + ".png");
+	} catch (Exception e) {
+	    // aléatoire ou image par défaut
+	    Image[] allImages = { poissonImage1, poissonImage2, poissonImage3 };
+	    return allImages[new Random().nextInt(allImages.length)];
+	}
+    }
+   
 
     private void delFish(String type) {
         fishes.removeIf(poisson -> poisson.getType().equals(type));
@@ -184,27 +199,37 @@ public class AquariumApp extends Application {
 	poisson.setDestination(poisson.getXdest(), poisson.getYdest(), poisson.getTime());		
     }
 
+    // private void draw(GraphicsContext gc) {
+    //     gc.clearRect(0, 0, VUE_WIDTH, VUE_HEIGHT);
+
+    //     gc.drawImage(backgroundImage, 0, 0, VUE_WIDTH, VUE_HEIGHT);
+
+    //     for (Poisson poisson : fishes) {
+    //         Image imageToDraw = getFishImage(poisson.getType());
+    //         gc.drawImage(imageToDraw, poisson.getX(), poisson.getY(), poisson.getWidth(), poisson.getHeight());
+    //     }
+    // }
     private void draw(GraphicsContext gc) {
-        gc.clearRect(0, 0, VUE_WIDTH, VUE_HEIGHT);
+	gc.clearRect(0, 0, VUE_WIDTH, VUE_HEIGHT);
+	gc.drawImage(backgroundImage, 0, 0, VUE_WIDTH, VUE_HEIGHT);
 
-        gc.drawImage(backgroundImage, 0, 0, VUE_WIDTH, VUE_HEIGHT);
-
-        for (Poisson poisson : fishes) {
-            Image imageToDraw = getFishImage(poisson.getType());
-            gc.drawImage(imageToDraw, poisson.getX(), poisson.getY(), poisson.getWidth(), poisson.getHeight());
-        }
+	for (Poisson poisson : fishes) {
+	    gc.drawImage(poisson.getImage(), poisson.getX(), poisson.getY(), poisson.getWidth(), poisson.getHeight());
+	}
     }
 
     private Image getFishImage(String type) {
-        switch (type) {
-	case "Poisson1":
-	    return poissonImage1;
-	case "Poisson2":
-	    return poissonImage2;
-	case "Poisson3":
-	    return poissonImage3;
-	default:
-	    return poissonImage1;
-        }
+	String baseName = type.split("_")[0];
+	try {
+	    return new Image("images/" + baseName + ".png");
+	} catch (Exception e) {
+	    // Si le fichier est introuvable, retourne un poisson aléatoire par défaut
+	    int i = new Random().nextInt(3);
+	    return switch (i) {
+            case 0 -> poissonImage1;
+            case 1 -> poissonImage2;
+            default -> poissonImage3;
+	    };
+	}
     }
 }
