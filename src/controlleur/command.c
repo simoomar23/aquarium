@@ -468,8 +468,8 @@ char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute
 
     for (int i = 0; i < count; i++) {
         char line[256];
-        printf("this the name :::: %s\n",fishes[i].name);
-        snprintf(line, sizeof(line), "[%s at %dx%d,%dx%d,%d]\n",
+        //printf("this the name :::: %s\n",fishes[i].name);
+        snprintf(line, sizeof(line), "[%s at %dx%d,%dx%d,%d] ",
                  fishes[i].name,
                  fishes[i].coord_f.x, fishes[i].coord_f.y,
                  fishes[i].width, fishes[i].length,
@@ -487,6 +487,9 @@ char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute
 
         strcat(result, line);
     }
+    size_t result_size = strlen(result);
+    result[result_size] = '\n';
+    result[result_size + 1] ='\0';
     char header[] ="list ";
 
 

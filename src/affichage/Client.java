@@ -7,7 +7,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Client extends Application {
-    static final int port = 9092;
+    static final int port = 9091;
     private PrintWriter pred;
     private BufferedReader plec;
     private AquariumApp app;
@@ -40,7 +40,7 @@ public int startClient(String serverAddress
     Socket socket = new Socket(adress, port);
     plec = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     pred = new PrintWriter(socket.getOutputStream(), true);
-    String connexion = "hello in as " + id;
+    String connexion = "hello in as N" + id;
     pred.println(connexion);
     String greeting = plec.readLine();
     System.out.println("    > " + greeting);

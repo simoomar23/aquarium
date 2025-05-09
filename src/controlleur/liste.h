@@ -47,6 +47,8 @@ int set__remove(struct set *s,poisson poisson) ;
 
 struct set * get_fishes_in_view(struct set * fishes ,int x,int y,int length,int width);
 
+struct set * get_fishes_in(struct set * fishes ,int x,int y,int length,int width);
+
 /*frees s set*/
 void free_set(struct set *s) ;
 
