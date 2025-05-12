@@ -40,6 +40,16 @@ public class Client extends Application {
             }
         }).start();
     }
+    private void appendLimitedText(String text) {
+	String[] lines = receiveArea.getText().split("\n");
+	StringBuilder sb = new StringBuilder();
+	int start = Math.max(0, lines.length - 19); // 19, car on va ajouter 1 ligne
+	for (int i = start; i < lines.length; i++) {
+	    sb.append(lines[i]).append("\n");
+	}
+	sb.append(text).append("\n");
+	receiveArea.setText(sb.toString());
+    }
 
     public int startClient(Stage primaryStage) throws IOException {
         Socket socket = new Socket(adress, port);
@@ -52,7 +62,7 @@ public class Client extends Application {
         Platform.runLater(() -> {
             app.handleCommand(connexion);
             app.handleCommand(greeting);
-            receiveArea.appendText(" > " + greeting + "\n");
+            appendLimitedText(" > " + greeting + "\n");
         });
 
         pred.println("getFishesContinuously");
@@ -62,7 +72,7 @@ public class Client extends Application {
                 String serverResponse;
                 while ((serverResponse = plec.readLine()) != null) {
                     final String msg = serverResponse;
-                    Platform.runLater(() -> receiveArea.appendText(" > " + msg + "\n"));
+                    Platform.runLater(() -> appendLimitedText(" > " + msg + "\n"));
 
                     if (msg.startsWith("list")) {
                         handleListResponse(msg);
