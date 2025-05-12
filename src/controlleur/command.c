@@ -7,8 +7,9 @@
 #include <sys/socket.h>
 #include "verification.h"
 #include "aquarium.h"
-
-
+#include "log_file.h"
+#include <errno.h>
+#include <pthread.h>
 #define TIME 2
 
 
@@ -25,8 +26,8 @@ char * cmd_status(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCou
 char * cmd_delFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_startFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-/*char * cmd_ls(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);*/
+/*char * cmd_ls(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);*/
+void cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_ping(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 
@@ -472,8 +473,7 @@ char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute
         snprintf(line, sizeof(line), "[%s at %dx%d,%dx%d,%d] ",
                  fishes[i].name,
                  fishes[i].coord_f.x, fishes[i].coord_f.y,
-                 fishes[i].width, fishes[i].length,
-                 fishes[i].temps);
+                 fishes[i].width, fishes[i].length,5);
 
         if (strlen(result) + strlen(line) + 1 > bufferSize) {
             bufferSize *= 2;
@@ -507,9 +507,25 @@ char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute
     return final;
 }
 /*char * cmd_ls(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_ping(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
-char * cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);*/
+char * cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);*/
+
+void getFishes_utils(int fd){
+    while(1){
+        char * response = cmd_getFishes(fd,NULL,0);
+        if (send(fd, response, strlen(response), 0) == -1) {
+							perror("send failed");
+							log_message(LOG_ERROR, "send failed to client %d: %s", fd, strerror(errno));
+		} else {
+        	log_message(LOG_DEBUG, "Response sent to client %d", fd);
+        }
+        sleep(3);
+    }
+}
+
+void cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute__((unused)), int tokenCount __attribute__((unused))){
+    pthread_t thread_id;
+    pthread_create(&thread_id, NULL, (void *)getFishes_utils, (void * )(intptr_t )fd);
+}
 
 char* cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
     if (strcmp(tokens[1],"out") || tokenCount != 2){
@@ -519,7 +535,7 @@ char* cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
     return "bye\n";
 }
 
-char * cmd_ping(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){
+char * cmd_ping(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH] __attribute__((unused)), int tokenCount __attribute__((unused))){
     char *result = malloc(20);
     if (result == NULL) {
         return strdup("error allocating memory\n");
@@ -544,6 +560,10 @@ char* handle_client_command(int fd,char *input) {
             
         }
 
+    }
+    if(strcmp(tokens[0],"getFishesContinuously") == 0){
+        cmd_getFishesContinuously(fd,tokens,tokenCount);
+        return "OOPS";
     }
     return "NOK : invalid commande\n";
 }

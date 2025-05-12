@@ -24,7 +24,7 @@ coord RandomPathWay(coord coordon){
 
 	return new_coord;
 }
-
+/*
 void prepare(poisson * poisson){
 	struct timeval tv1;
 	gettimeofday(&tv1,NULL);
@@ -42,3 +42,4 @@ void prepare(poisson * poisson){
 		poisson->temps = time;
 	}
 }
+*/

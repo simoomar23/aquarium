@@ -3,6 +3,7 @@
 
 #include "model.h"
 #include "liste.h"
+#include <sys/time.h>
 #define MAX_VIEWS 20
 
 
@@ -62,4 +63,7 @@ int is_available(int var);
 views get_views();
 
 view get_view(int id);
+
+void update_positions_continously(void);
+
 #endif 

@@ -4,13 +4,20 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-
+#include <pthread.h>
+#include <unistd.h>
+#include <errno.h>
 aquarium * my_aquarium;
 
 views my_views;
 
 
-
+void update_positions_continously(void){
+	while(1){
+		update_positions(my_aquarium->fishs);
+		sleep(5);
+	}
+}
 
 void initialize_aquarium(int length,int width,view all_views[],int size){
 	my_aquarium = malloc(sizeof(*my_aquarium));
@@ -22,7 +29,8 @@ void initialize_aquarium(int length,int width,view all_views[],int size){
 		my_views.all_views[i] = all_views[i];
 	}
 	my_views.size = size;
-
+	pthread_t tid;
+	pthread_create(&tid,NULL,(void*)update_positions_continously,NULL);
 }
 
 struct view make_view(int id,int x,int y,int width, int length , int available){
@@ -97,8 +105,8 @@ int add_fish(char *name , int x , int y, int length, int width, coord (*mobility
 	poisson.coord_d.y =(my_views.all_views[index].width * y )/HUNDRED + my_views.all_views[index].y;
 	poisson.coord_f.x = poisson.coord_d.x;
 	poisson.coord_f.y = poisson.coord_d.y;
-	poisson.temps = 0;
-	gettimeofday(&(poisson.tv),NULL);
+	//poisson.temps = 0;
+	//gettimeofday(&(poisson.tv),NULL);
 	poisson.status = NOTSTARTED;
 	poisson.mobility = mobility;
 	return set__add_head(my_aquarium->fishs,poisson); 
@@ -240,3 +248,4 @@ view get_view(int id){
 	perror("error while getting view \n ");
 	return my_views.all_views[0];
 }
+

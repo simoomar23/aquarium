@@ -21,12 +21,12 @@ typedef struct poisson {
 	char name[20];
 	int length;
 	int width;
-	int temps;
+	//int temps;
 	coord coord_d;
 	coord coord_f;
 	enum status status;
 	coord (*mobility)(coord); 
-	struct timeval tv;
+	//struct timeval tv;
 	
 } poisson;
 
@@ -37,7 +37,7 @@ coord RandomPathWay(coord corrdon);
 
 int in_helper(int x1,int y1,int x,int y,int length,int width);
 
-void prepare(poisson * poisson);
+//void prepare(poisson * poisson);
 
 
 

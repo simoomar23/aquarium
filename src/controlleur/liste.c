@@ -87,13 +87,24 @@ int in_f(poisson poisson,int x,int y,int length,int width){
 
 }
 
+void update_positions(struct set *fishes ){
+  struct lelement *e = fishes->l->head;
+  for (int i=0;i<fishes->size;i++){
+    if(e->poisson.status == STARTED){
+      e->poisson.coord_d = e->poisson.coord_f;
+      e->poisson.coord_f = e->poisson.mobility(e->poisson.coord_f);
+    }
+
+    e = e->next;
+  }
+}
 
 struct set * get_fishes_in_view(struct set * fishes ,int x,int y,int length,int width){
 	struct lelement *e = fishes->l->head;
 	struct set * fishes_in = set__empty();
 	for(int i=0;i<fishes->size;i++){
 		if(in_f(e->poisson,x,y,length,width)){
-		  prepare(&(e->poisson));
+		  //prepare(&(e->poisson));
 			poisson poisson = e->poisson;
 			poisson.coord_f.x = ((poisson.coord_f.x -x)*HUNDRED)/length;
       printf("ssss %d \n",poisson.coord_f.x);

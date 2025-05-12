@@ -54,4 +54,7 @@ void free_set(struct set *s) ;
 
 /*prints s set*/
 void set_print(struct set *s,char*prefix);
+
+void update_positions(struct set *fishes);
+
 #endif

@@ -237,7 +237,8 @@ int main(int argc , char * argv[]) {
 						char * response = handle_client_command(sd,clientBuffer);
 						printf("%s\n",response);
 						//printf("client buffer : %s\n",clientBuffer);
-						if (send(sd, response, strlen(response), 0) == -1) {
+						
+						if (strcmp(response,"OOPS") && send(sd, response, strlen(response), 0) == -1) {
 							perror("send failed");
 							log_message(LOG_ERROR, "send failed to client %d: %s", sd, strerror(errno));
 						} else {
