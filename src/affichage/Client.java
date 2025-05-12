@@ -9,8 +9,10 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+
+
 public class Client extends Application {
-    static final int port = 9091;
+    private static int port;
     private PrintWriter pred;
     private BufferedReader plec;
     private AquariumApp app;
@@ -20,11 +22,29 @@ public class Client extends Application {
     TextArea receiveArea = new TextArea();
     TextField inputField = new TextField();
 
+//    public static void main(String[] args) {
+//        id = args[1];
+//        adress = args[0];
+//        launch(args);
+//    }
     public static void main(String[] args) {
-        id = args[1];
-        adress = args[0];
-        launch(args);
+        try {
+            DisplayConfig config = new DisplayConfig("affichage.cfg");
+
+            adress = config.get("controller-address");
+            port = config.getInt("controller-port", 9091);
+            id = config.get("id");
+
+            //logger.info("Loaded config: address=" + adress + ", port=" + port + ", id=" + id);
+        } catch (IOException e) {
+            //logger.severe("Failed to load config: " + e.getMessage());
+            System.err.println("Could not load configuration: " + e.getMessage());
+            System.exit(1);
+        }
+
+        launch(args);  // JavaFX starts here
     }
+
 
     @Override
     public void start(Stage primaryStage) {
