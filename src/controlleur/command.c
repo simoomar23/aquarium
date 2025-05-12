@@ -456,9 +456,11 @@ char * cmd_startFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int token
 }
 char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute__((unused)), int tokenCount __attribute__((unused))){
     int count = 0;
+	printf("lll%d\n",fd);
     poisson *fishes = getFishes(get_id_of_fd(fd), &count); 
 
     if (fishes == NULL || count == 0) {
+		printf("mal zaml\n");
         return strdup("list\n");
     }
 
@@ -473,7 +475,7 @@ char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute
         snprintf(line, sizeof(line), "[%s at %dx%d,%dx%d,%d] ",
                  fishes[i].name,
                  fishes[i].coord_f.x, fishes[i].coord_f.y,
-                 fishes[i].width, fishes[i].length,5);
+                 fishes[i].length,fishes[i].width,5);
 
         if (strlen(result) + strlen(line) + 1 > bufferSize) {
             bufferSize *= 2;
@@ -509,16 +511,17 @@ char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute
 /*char * cmd_ls(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
 char * cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);*/
 
-void getFishes_utils(int fd){
+void getFishes_utils(void *fd){
+	int sd = (intptr_t)fd;
     while(1){
-        char * response = cmd_getFishes(fd,NULL,0);
-        if (send(fd, response, strlen(response), 0) == -1) {
+        char * response = cmd_getFishes(sd,NULL,0);
+        if (send(sd, response, strlen(response), 0) == -1) {
 							perror("send failed");
-							log_message(LOG_ERROR, "send failed to client %d: %s", fd, strerror(errno));
+							log_message(LOG_ERROR, "send failed to client %d: %s", sd, strerror(errno));
 		} else {
-        	log_message(LOG_DEBUG, "Response sent to client %d", fd);
+        	log_message(LOG_DEBUG, "Response sent to client %d", sd);
         }
-        sleep(3);
+        sleep(7);
     }
 }
 

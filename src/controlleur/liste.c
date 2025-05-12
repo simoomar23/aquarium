@@ -89,6 +89,7 @@ int in_f(poisson poisson,int x,int y,int length,int width){
 
 void update_positions(struct set *fishes ){
   struct lelement *e = fishes->l->head;
+  printf("fishes size %d\n",fishes->size);
   for (int i=0;i<fishes->size;i++){
     if(e->poisson.status == STARTED){
       e->poisson.coord_d = e->poisson.coord_f;
@@ -107,7 +108,7 @@ struct set * get_fishes_in_view(struct set * fishes ,int x,int y,int length,int 
 		  //prepare(&(e->poisson));
 			poisson poisson = e->poisson;
 			poisson.coord_f.x = ((poisson.coord_f.x -x)*HUNDRED)/length;
-      printf("ssss %d \n",poisson.coord_f.x);
+      		printf("ssss %d \n",poisson.coord_f.x);
 			poisson.coord_f.y = ((poisson.coord_f.y -y)*HUNDRED)/width;
       poisson.length = (poisson.length*HUNDRED)/length;
       poisson.width = (poisson.width*HUNDRED)/width;  

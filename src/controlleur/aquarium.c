@@ -109,6 +109,7 @@ int add_fish(char *name , int x , int y, int length, int width, coord (*mobility
 	//gettimeofday(&(poisson.tv),NULL);
 	poisson.status = NOTSTARTED;
 	poisson.mobility = mobility;
+	printf("add done\n");
 	return set__add_head(my_aquarium->fishs,poisson); 
 
 }
