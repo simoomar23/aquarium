@@ -8,9 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import java.util.logging.Logger;  
-
-
+import java.util.logging.Logger;
 
 public class Client extends Application {
     private static int port;
@@ -21,21 +19,15 @@ public class Client extends Application {
     private static String adress;
     BlockingQueue<String> okQueue = new LinkedBlockingQueue<>();
     TextArea receiveArea = new TextArea();
-    TextField inputField = new TextField();
 
-    // LOgger
     private static final Logger logger = ClientLogger.getLogger();
-
-
 
     public static void main(String[] args) {
         try {
             DisplayConfig config = new DisplayConfig("affichage.cfg");
-
             adress = config.get("controller-address");
-            port = config.getInt("controller-port", 9091);
+            port = config.getInt("controller-port", 9092);
             id = config.get("id");
-
             logger.info("Loaded config: address=" + adress + ", port=" + port + ", id=" + id);
         } catch (IOException e) {
             logger.severe("Failed to load config: " + e.getMessage());
@@ -43,14 +35,12 @@ public class Client extends Application {
             System.exit(1);
         }
 
-        launch(args);  // JavaFX starts here
+        launch(args);
     }
-
 
     @Override
     public void start(Stage primaryStage) {
         app = new AquariumApp();
-        setupSendWindow();
         setupReceiveWindow();
 
         new Thread(() -> {
@@ -61,15 +51,16 @@ public class Client extends Application {
             }
         }).start();
     }
+
     private void appendLimitedText(String text) {
-	String[] lines = receiveArea.getText().split("\n");
-	StringBuilder sb = new StringBuilder();
-	int start = Math.max(0, lines.length - 19); // 19, car on va ajouter 1 ligne
-	for (int i = start; i < lines.length; i++) {
-	    sb.append(lines[i]).append("\n");
-	}
-	sb.append(text).append("\n");
-	receiveArea.setText(sb.toString());
+        String[] lines = receiveArea.getText().split("\n");
+        StringBuilder sb = new StringBuilder();
+        int start = Math.max(0, lines.length - 19);
+        for (int i = start; i < lines.length; i++) {
+            sb.append(lines[i]).append("\n");
+        }
+        sb.append(text).append("\n");
+        receiveArea.setText(sb.toString());
     }
 
     public int startClient(Stage primaryStage) throws IOException {
@@ -79,7 +70,6 @@ public class Client extends Application {
         pred = new PrintWriter(socket.getOutputStream(), true);
         String connexion = "hello in as " + id;
 
-        
         pred.println(connexion);
         logger.fine("Sending connection message: " + connexion);
         String greeting = plec.readLine();
@@ -122,60 +112,44 @@ public class Client extends Application {
             }
         }).start();
 
+        new Thread(() -> {
+            BufferedReader consoleInput = new BufferedReader(new InputStreamReader(System.in));
+            try {
+                while (true) {
+                    String command = consoleInput.readLine();
+                    logger.fine("User entered command: " + command);
+
+                    if (command == null || command.isBlank()) continue;
+
+                    if (command.equalsIgnoreCase("log out")) {
+                        logger.fine("Sent log out to server");
+                        logger.fine("Logging out. Platform closing...");
+                        pred.println("bye");
+                        Platform.exit();
+                        break;
+                    } else if (command.startsWith("status")) {
+                        app.handleCommand(command);
+                    } else {
+                        logger.fine("Sent command to server:" + command);
+                        pred.println(command);
+                        if (command.startsWith("addFish") || command.startsWith("delFish") || command.startsWith("startFish")) {
+                            String ok = okQueue.take();
+                            if (ok.equals("OK")) {
+                                Platform.runLater(() -> app.handleCommand(command));
+                            }
+                        }
+                    }
+                }
+            } catch (IOException | InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }).start();
+
         return 0;
     }
 
     private void handleListResponse(String response) {
         Platform.runLater(() -> app.handleResponse(response));
-    }
-
-    private void setupSendWindow() {
-        Stage sendStage = new Stage();
-        VBox layout = new VBox();
-        Button sendBtn = new Button("Send");
-
-        sendBtn.setOnAction(e -> {
-            String command = inputField.getText();
-            logger.fine("User entered command: " + command);
-
-            if (command == null || command.isBlank()) return;
-
-            if (command.equalsIgnoreCase("log out")) {
-                try {
-                    logger.fine("Sent log out to server");
-                    logger.fine("Loging out. Plateform closing...");
-
-                    pred.println("bye");
-                    Platform.exit();
-                } catch (Exception ex) {
-                    logger.severe("Not Loging out. Error closing Plateform...");
-                    ex.printStackTrace();
-                }
-            } else if (command.startsWith("status")) {
-                app.handleCommand(command);
-            } else {
-                logger.fine("Sent command to server:" + command);
-                pred.println(command);
-                if (command.startsWith("addFish") || command.startsWith("delFish") || command.startsWith("startFish")) {
-                    new Thread(() -> {
-                        try {
-                            String ok = okQueue.take();
-                            if (ok.equals("OK")) {
-                                Platform.runLater(() -> app.handleCommand(command));
-                            }
-                        } catch (InterruptedException ex) {
-                            ex.printStackTrace();
-                        }
-                    }).start();
-                }
-            }
-            inputField.clear();
-        });
-
-        layout.getChildren().addAll(new Label("Enter Command:"), inputField, sendBtn);
-        sendStage.setScene(new Scene(layout, 300, 100));
-        sendStage.setTitle("Send Commands");
-        sendStage.show();
     }
 
     private void setupReceiveWindow() {
