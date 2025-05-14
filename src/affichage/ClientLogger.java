@@ -10,9 +10,9 @@ public class ClientLogger {
             fh.setFormatter(new SimpleFormatter());
 
             logger.addHandler(fh);
-            logger.setLevel(Level.ALL);              // Show all levels
-            fh.setLevel(Level.ALL);                  // File handler accepts all levels
-            logger.setUseParentHandlers(false);      // Don’t print to console
+            logger.setLevel(Level.ALL);              
+            fh.setLevel(Level.ALL);                  
+            logger.setUseParentHandlers(false);      
         } catch (IOException e) {
             System.err.println("Logger setup failed: " + e.getMessage());
         }

@@ -8,6 +8,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import java.util.logging.Logger;  
 
 
 
@@ -22,11 +23,11 @@ public class Client extends Application {
     TextArea receiveArea = new TextArea();
     TextField inputField = new TextField();
 
-//    public static void main(String[] args) {
-//        id = args[1];
-//        adress = args[0];
-//        launch(args);
-//    }
+    // LOgger
+    private static final Logger logger = ClientLogger.getLogger();
+
+
+
     public static void main(String[] args) {
         try {
             DisplayConfig config = new DisplayConfig("affichage.cfg");
@@ -35,9 +36,9 @@ public class Client extends Application {
             port = config.getInt("controller-port", 9091);
             id = config.get("id");
 
-            //logger.info("Loaded config: address=" + adress + ", port=" + port + ", id=" + id);
+            logger.info("Loaded config: address=" + adress + ", port=" + port + ", id=" + id);
         } catch (IOException e) {
-            //logger.severe("Failed to load config: " + e.getMessage());
+            logger.severe("Failed to load config: " + e.getMessage());
             System.err.println("Could not load configuration: " + e.getMessage());
             System.exit(1);
         }
@@ -73,11 +74,16 @@ public class Client extends Application {
 
     public int startClient(Stage primaryStage) throws IOException {
         Socket socket = new Socket(adress, port);
+        logger.info("Connecting to server at " + adress + ":" + port);
         plec = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         pred = new PrintWriter(socket.getOutputStream(), true);
         String connexion = "hello in as " + id;
+
+        
         pred.println(connexion);
+        logger.fine("Sending connection message: " + connexion);
         String greeting = plec.readLine();
+        logger.fine("Received greeting: " + greeting);
 
         Platform.runLater(() -> {
             app.handleCommand(connexion);
@@ -86,12 +92,15 @@ public class Client extends Application {
         });
 
         pred.println("getFishesContinuously");
+        logger.fine("Sending to server getFishedContinuously");
 
         new Thread(() -> {
             try {
                 String serverResponse;
                 while ((serverResponse = plec.readLine()) != null) {
                     final String msg = serverResponse;
+                    logger.fine("Received message from server: " + msg);
+
                     Platform.runLater(() -> appendLimitedText(" > " + msg + "\n"));
 
                     if (msg.startsWith("list")) {
@@ -99,6 +108,7 @@ public class Client extends Application {
                     } else if (msg.startsWith("OK")) {
                         okQueue.put("OK");
                     } else if (msg.startsWith("bye")) {
+                        logger.info("Server requested disconnect.");
                         pred.close();
                         plec.close();
                         socket.close();
@@ -107,6 +117,7 @@ public class Client extends Application {
                     }
                 }
             } catch (IOException | InterruptedException e) {
+                logger.log(java.util.logging.Level.SEVERE, "Error during communication", e);
                 e.printStackTrace();
             }
         }).start();
@@ -125,18 +136,25 @@ public class Client extends Application {
 
         sendBtn.setOnAction(e -> {
             String command = inputField.getText();
+            logger.fine("User entered command: " + command);
+
             if (command == null || command.isBlank()) return;
 
             if (command.equalsIgnoreCase("log out")) {
                 try {
+                    logger.fine("Sent log out to server");
+                    logger.fine("Loging out. Plateform closing...");
+
                     pred.println("bye");
                     Platform.exit();
                 } catch (Exception ex) {
+                    logger.severe("Not Loging out. Error closing Plateform...");
                     ex.printStackTrace();
                 }
             } else if (command.startsWith("status")) {
                 app.handleCommand(command);
             } else {
+                logger.fine("Sent command to server:" + command);
                 pred.println(command);
                 if (command.startsWith("addFish") || command.startsWith("delFish") || command.startsWith("startFish")) {
                     new Thread(() -> {
