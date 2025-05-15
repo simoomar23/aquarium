@@ -27,8 +27,8 @@ coord RandomPathWay(coord coordon,int x,int y){
 	new_coord.x = x1 + rand1* MAX_STEP;
 	new_coord.y = y1 + rand2*MAX_STEP;
 	if((new_coord.x < 0 || new_coord.x + x > 1000) || (new_coord.y < 0 || new_coord.y + y > 1000)){
-		new_coord.x = x1 -2 * rand1* MAX_STEP;
-		new_coord.y = y1 -2 * rand2*MAX_STEP;
+		new_coord.x = x1 - rand1* MAX_STEP;
+		new_coord.y = y1 - rand2*MAX_STEP;
 	}
 
 	return new_coord;
@@ -86,8 +86,9 @@ coord movement_rectangular(coord unused,int x,int y) {
 }
 
 coord horizenal(coord coord,int x,int y){
-	if(coord.x < 900)
-		coord.x += 70;
+	
+	coord.x += 70;
+	
 	return coord;
 }
 /*

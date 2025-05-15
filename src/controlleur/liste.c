@@ -92,6 +92,7 @@ void update_positions(struct set *fishes ){
   //printf("fishes size %d\n",fishes->size);
   for (int i=0;i<fishes->size;i++){
     if(e->poisson.status == STARTED){
+	  e->poisson.coord_d = e->poisson.coord_f;
       e->poisson.coord_f = e->poisson.mobility(e->poisson.coord_f,e->poisson.length,e->poisson.width);
     }
 
@@ -156,17 +157,24 @@ struct set * get_fishes_in_view(struct set * fishes ,int x,int y,int length,int 
 		int f1 = in_d(e->poisson,x,y,length,width);
     //printf("%d;%d , %d;%d\n",f1,f2,e->poisson.coord_d.x,e->poisson.coord_d.y);
 		if(f1 || f2){
-		  if (!f1)
-        quick = 1;
-      count++;
 			poisson poisson = e->poisson;
-			poisson.coord_f.x = ((poisson.coord_f.x -x)*HUNDRED)/length;
-			poisson.coord_f.y = ((poisson.coord_f.y -y)*HUNDRED)/width;
-      poisson.coord_d.x = ((poisson.coord_d.x -x)*HUNDRED)/length;
-			poisson.coord_d.y = ((poisson.coord_d.y -y)*HUNDRED)/width;
-      poisson.length = (poisson.length*HUNDRED)/length;
-      poisson.width = (poisson.width*HUNDRED)/width;
-      e->poisson.coord_d = e->poisson.coord_f;  
+		  	if (!f1){
+				quick = 1;
+		  	}
+			if(f1 && !f2){
+				e->poisson.coord_d = e->poisson.coord_f;
+
+			}
+        
+      	count++;
+	
+		poisson.coord_f.x = ((poisson.coord_f.x -x)*HUNDRED)/length;
+		poisson.coord_f.y = ((poisson.coord_f.y -y)*HUNDRED)/width;
+		poisson.coord_d.x = ((poisson.coord_d.x -x)*HUNDRED)/length;
+		poisson.coord_d.y = ((poisson.coord_d.y -y)*HUNDRED)/width;
+      	poisson.length = (poisson.length*HUNDRED)/length;
+      	poisson.width = (poisson.width*HUNDRED)/width;
+      	e->poisson.coord_d = e->poisson.coord_f;  
 			assert(!set__add_head(fishes_in,poisson));
 		
 		}

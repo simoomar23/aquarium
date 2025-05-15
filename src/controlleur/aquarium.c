@@ -15,7 +15,7 @@ views my_views;
 void update_positions_continously(void){
 	while(1){
 		update_positions(my_aquarium->fishs);
-		sleep(5);
+		sleep(2);
 	}
 }
 
@@ -68,15 +68,13 @@ int add_view(view view){
 
 void shift_left(int index){
 	for(int i=index;i<my_views.size-1;i++){
-		//printf(" id %d is %d \n",i,my_views.all_views[i].id);
+		
 		my_views.all_views[i] = my_views.all_views[i+1];
-		//printf(" id %d is %d \n",i,my_views.all_views[i].id);
 	}
 }
 
 int del_view(int id){
 	int i = find_view(id);
-	//printf("index: %d\n",i);
 	if(i == -1)
 		return 1;
 	shift_left(i);
@@ -105,11 +103,8 @@ int add_fish(char *name , int x , int y, int length, int width, coord (*mobility
 	poisson.coord_d.y =(my_views.all_views[index].width * y )/HUNDRED + my_views.all_views[index].y;
 	poisson.coord_f.x = poisson.coord_d.x;
 	poisson.coord_f.y = poisson.coord_d.y;
-	//poisson.temps = 0;
-	//gettimeofday(&(poisson.tv),NULL);
 	poisson.status = NOTSTARTED;
 	poisson.mobility = mobility;
-	//printf("add done\n");
 	return set__add_head(my_aquarium->fishs,poisson); 
 
 }
@@ -195,9 +190,7 @@ poisson * getFishes(int view_id, int *count,int fd){
 
 int available_view(){
 	int size = views_size();
-	//printf("%d = size \n",size);
 	for (int i = 0 ; i < size ; i++){
-		//printf("available %d?\n",my_views.all_views[i].available);
 		if (my_views.all_views[i].available == -1){
 			return my_views.all_views[i].id;
 		}

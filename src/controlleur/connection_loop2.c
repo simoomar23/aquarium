@@ -74,9 +74,9 @@ int main(int argc , char * argv[]) {
    // Bind
    memset(&serverAddr, 0, sizeof(serverAddr)); // Initilalize server structure to zeros
    serverAddr.sin_family = AF_INET;
-   serverAddr.sin_port = htons(atoi(argv[1])) ; // user provided
+   //serverAddr.sin_port = htons(atoi(argv[1])) ; // user provided
    //printf("%d",get_controller_port(&config));
-   //serverAddr.sin_port = htons(get_controller_port(&config));
+   serverAddr.sin_port = htons(get_controller_port(&config));
    serverAddr.sin_addr.s_addr = INADDR_ANY;  // Bind to all available interfaces
 
 
@@ -187,7 +187,6 @@ int main(int argc , char * argv[]) {
     		inet_ntop(AF_INET, &clientAddr.sin_addr, ip_str, sizeof(ip_str));
     		int port = ntohs(clientAddr.sin_port);
 
-		   //printf("New client connected: %d\n", newSocket);
 		   log_message(LOG_INFO, "Client %d connected from %s:%d", newSocket, ip_str, port);
 
 
@@ -233,10 +232,7 @@ int main(int argc , char * argv[]) {
 						clientBuffer[bytesReceived] = '\0';
 
 						log_message(LOG_DEBUG, "Received from client %d: %s", sd, clientBuffer);
-						//printf("mal zaml bolk\n");
 						char * response = handle_client_command(sd,clientBuffer);
-						printf("%s\n",response);
-						//printf("client buffer : %s\n",clientBuffer);
 						
 						if (strcmp(response,"OOPS") && send(sd, response, strlen(response), 0) == -1) {
 							perror("send failed");
@@ -248,7 +244,6 @@ int main(int argc , char * argv[]) {
 								clientSocket[i] = 0;
 							}
 						}
-						//free(response);
 					}
 				}
 			}
