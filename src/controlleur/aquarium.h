@@ -40,7 +40,7 @@ int add_view(view view);
 
 int del_view(int id);
 
-int add_fish(char *name , int x , int y, int length, int width, coord (*mobility)(coord),int view_id);
+int add_fish(char *name , int x , int y, int length, int width, coord (*mobility)(coord,int,int),int view_id);
 
 int views_size();
 

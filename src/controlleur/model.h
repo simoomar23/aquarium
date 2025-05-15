@@ -25,7 +25,7 @@ typedef struct poisson {
 	coord coord_d;
 	coord coord_f;
 	enum status status;
-	coord (*mobility)(coord); 
+	coord (*mobility)(coord,int,int); 
 	//struct timeval tv;
 	
 } poisson;
@@ -33,13 +33,12 @@ typedef struct poisson {
 
 void print_poisson(poisson poisson);
 
-coord RandomPathWay(coord corrdon);
-coord movement_rectangular(coord unused);
-coord horizenal(coord coord);
+coord RandomPathWay(coord corrdon , int x ,int y);
+coord movement_rectangular(coord unused, int x ,int y);
+coord horizenal(coord coord,int x,int y);
 int in_helper(int x1,int y1,int x,int y,int length,int width);
 
 //void prepare(poisson * poisson);
-
 
 
 #endif

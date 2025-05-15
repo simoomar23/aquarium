@@ -92,7 +92,7 @@ void update_positions(struct set *fishes ){
   printf("fishes size %d\n",fishes->size);
   for (int i=0;i<fishes->size;i++){
     if(e->poisson.status == STARTED){
-      e->poisson.coord_f = e->poisson.mobility(e->poisson.coord_f);
+      e->poisson.coord_f = e->poisson.mobility(e->poisson.coord_f,e->poisson.length,e->poisson.width);
     }
 
     e = e->next;

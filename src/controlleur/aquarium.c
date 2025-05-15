@@ -93,7 +93,7 @@ int views_size(){
 
 
 
-int add_fish(char *name , int x , int y, int length, int width, coord (*mobility)(coord),int view_id){
+int add_fish(char *name , int x , int y, int length, int width, coord (*mobility)(coord,int,int),int view_id){
 	int index = find_view(view_id);
 	if(index == -1)
 		return 1;

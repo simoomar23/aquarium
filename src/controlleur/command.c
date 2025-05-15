@@ -44,7 +44,7 @@ typedef struct {
 
 typedef struct {
     char * name ;
-    coord (*func)(coord);
+    coord (*func)(coord,int,int);
 }functions;
 
 char loaded_aquarium[MAX_TOKEN_LENGTH] = "";

@@ -17,20 +17,25 @@ int in_helper(int x1,int y1,int x,int y,int length,int width){
 }
 
 
-coord RandomPathWay(coord coordon){
-	int x = coordon.x;
-	int y = coordon.y;
+coord RandomPathWay(coord coordon,int x,int y){
+	int x1 = coordon.x;
+	int y1 = coordon.y;
 	coord new_coord;
 	srand(time(NULL));
-
-	new_coord.x = x + /*(rand()%3 - 1)**/ MAX_STEP;
-	new_coord.y = y + /*(rand()%3 - 1)**/ MAX_STEP;
+	int rand1 = (rand()%3 - 1);
+	int rand2 = (rand()%3 - 1);
+	new_coord.x = x1 + rand1* MAX_STEP;
+	new_coord.y = y1 + rand2*MAX_STEP;
+	if((new_coord.x < 0 || new_coord.x + x > 1000) || (new_coord.y < 0 || new_coord.y + y > 1000)){
+		new_coord.x = x1 -2 * rand1* MAX_STEP;
+		new_coord.y = y1 -2 * rand2*MAX_STEP;
+	}
 
 	return new_coord;
 }
 
 
-coord movement_rectangular(coord unused) {
+coord movement_rectangular(coord unused,int x,int y) {
     // Taille d'un sous-rectangle
     const int Wc = AQUA_WIDTH  / GRID_COLS;  // 250
     const int Hc = AQUA_HEIGHT / GRID_ROWS;  // 250
@@ -80,7 +85,7 @@ coord movement_rectangular(coord unused) {
     return res;
 }
 
-coord horizenal(coord coord){
+coord horizenal(coord coord,int x,int y){
 	if(coord.x < 900)
 		coord.x += 70;
 	return coord;
