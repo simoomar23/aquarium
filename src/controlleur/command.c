@@ -536,7 +536,7 @@ void getFishes_utils(void *fd){
 		} else {
         	log_message(LOG_DEBUG, "Response sent to client %d", sd);
         }
-        sleep(7);
+        sleep(5);
     }
 }
 
