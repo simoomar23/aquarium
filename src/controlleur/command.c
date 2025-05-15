@@ -10,6 +10,7 @@
 #include "log_file.h"
 #include <errno.h>
 #include <pthread.h>
+#include "model.h"
 #define TIME 2
 
 
@@ -41,6 +42,11 @@ typedef struct {
     void (*func)(char[MAX_TOKENS][MAX_TOKEN_LENGTH], int);
 } PromptCommand;
 
+typedef struct {
+    char * name ;
+    coord (*func)(coord);
+}functions;
+
 char loaded_aquarium[MAX_TOKEN_LENGTH] = "";
 
 PromptCommand commandTable[] = {
@@ -62,12 +68,18 @@ ClientCommand clientcommande[] = {
     */
     {"ping", cmd_ping}
 };
+functions myfunc[] = {
+    {"RandomWayPoint",RandomPathWay},
+    {"movement_rectangular",movement_rectangular},
+    {"horizenal",horizenal}
+};
 
 int command_length;
 int command_width;
 
 #define PROMPT_COMMAND_COUNT (sizeof(commandTable) / sizeof(PromptCommand))
 #define CLIENT_COMMAND_COUNT (sizeof(clientcommande) / sizeof(ClientCommand))
+#define functions_size (sizeof(myfunc))/sizeof(functions)
 
 int tokenize(char *input, char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]) {
     int tokenCount = 0;
@@ -371,13 +383,18 @@ char * cmd_addFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCo
 	int width;
 	int length;
     int c;
-    if((c = strcmp(tokens[5],"RandomWayPoint"))){
+    if((c = strcmp(tokens[5],"RandomWayPoint")) && (c = strcmp(tokens[5],"movement_rectangular")) &&  (c = strcmp(tokens[5],"horizenal"))){
        // printf("token is %s ad  is : %d\n",tokens[5],c);
         return "NOK : modèle de mobilité non supporté\n";
     }
     sscanf(tokens[3],"%dx%d,",&x,&y);
     sscanf(tokens[4],"%dx%d,",&length,&width);
-    if(add_fish(tokens[1],x,y,length,width,RandomPathWay,get_id_of_fd(fd)))
+    coord (*func)(coord);
+    for(long unsigned int i=0;i<functions_size;i++){
+        if(!strcmp(myfunc[i].name,tokens[5]))
+            func = myfunc[i].func;
+    }
+    if(add_fish(tokens[1],x,y,length,width,func,get_id_of_fd(fd)))
         return "NOK : poisson existe déja dans l'aquarium\n";
     return "OK\n";
 }

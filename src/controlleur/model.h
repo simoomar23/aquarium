@@ -34,7 +34,8 @@ typedef struct poisson {
 void print_poisson(poisson poisson);
 
 coord RandomPathWay(coord corrdon);
-
+coord movement_rectangular(coord unused);
+coord horizenal(coord coord);
 int in_helper(int x1,int y1,int x,int y,int length,int width);
 
 //void prepare(poisson * poisson);
