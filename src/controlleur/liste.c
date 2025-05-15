@@ -89,7 +89,7 @@ int in_f(poisson poisson,int x,int y,int length,int width){
 
 void update_positions(struct set *fishes ){
   struct lelement *e = fishes->l->head;
-  printf("fishes size %d\n",fishes->size);
+  //printf("fishes size %d\n",fishes->size);
   for (int i=0;i<fishes->size;i++){
     if(e->poisson.status == STARTED){
       e->poisson.coord_f = e->poisson.mobility(e->poisson.coord_f,e->poisson.length,e->poisson.width);
@@ -154,7 +154,7 @@ struct set * get_fishes_in_view(struct set * fishes ,int x,int y,int length,int 
 	for(int i=0;i<fishes->size;i++){
 		int f2 = in_f(e->poisson,x,y,length,width);
 		int f1 = in_d(e->poisson,x,y,length,width);
-    printf("%d;%d , %d;%d\n",f1,f2,e->poisson.coord_d.x,e->poisson.coord_d.y);
+    //printf("%d;%d , %d;%d\n",f1,f2,e->poisson.coord_d.x,e->poisson.coord_d.y);
 		if(f1 || f2){
 		  if (!f1)
         quick = 1;

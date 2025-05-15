@@ -115,7 +115,6 @@ void handle_command(char *input) {
 
     if (tokenCount == 0) return;
     //printf("tokens %s et %d \n",tokens[0],strlen(tokens[0]));
-    //printf("wa motherfucker ha ficher %s",tokens[1]);
     for (long unsigned int i = 0; i < PROMPT_COMMAND_COUNT; i++) {
         int c = strcmp(tokens[0], commandTable[i].name);
        
@@ -389,7 +388,7 @@ char * cmd_addFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCo
     }
     sscanf(tokens[3],"%dx%d,",&x,&y);
     sscanf(tokens[4],"%dx%d,",&length,&width);
-    coord (*func)(coord);
+    coord (*func)(coord,int,int);
     for(long unsigned int i=0;i<functions_size;i++){
         if(!strcmp(myfunc[i].name,tokens[5]))
             func = myfunc[i].func;
@@ -473,7 +472,7 @@ char * cmd_startFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int token
 }
 char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute__((unused)), int tokenCount __attribute__((unused))){
     int count = 0;
-	printf("lll%d\n",fd);
+	//printf("lll%d\n",fd);
     poisson *fishes = getFishes(get_id_of_fd(fd), &count,fd); 
 
     if (fishes == NULL || count == 0) {
