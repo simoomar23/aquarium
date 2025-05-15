@@ -2,7 +2,7 @@
 #define MODEL_H
 
 #include <sys/time.h>
-#define MAX_STEP 10
+#define MAX_STEP 70
 
 
 

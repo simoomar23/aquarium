@@ -157,13 +157,13 @@ int start_fish(char * name, int view_number){
 }
 
 ////////////////////////////////////////////////////// pay attention : it retruns only STARTED fishes
-poisson * getFishes(int view_id, int *count){
+poisson * getFishes(int view_id, int *count,int fd){
 	int size;
 	int poisson_array_size =0;
 	int index = find_view(view_id);
 	if(index != -1){
 	struct set * view_fishes = get_fishes_in_view(my_aquarium->fishs,my_views.all_views[index].x,my_views.all_views[index].y,\
-	 									my_views.all_views[index].length,my_views.all_views[index].width);
+	 									my_views.all_views[index].length,my_views.all_views[index].width,fd);
 	
 	if(!(size = set_size(view_fishes))){
 		free_set(view_fishes);

@@ -96,11 +96,11 @@ int add_fish_verification(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCo
     
     copy = tokens[4];
     int length = strtol(copy,&end,10);
-    if(end[0]!='x' || x+length > 100)
+    if(end[0]!='x')
         return 1;
     copy = &end[1];
-    int width = strtol(copy,&end,10);
-    if(end[0]!=',' || y+width > 100)
+    length = strtol(copy,&end,10);
+    if(end[0]!=','|| length > 1000)
         return 1;    
     return 0;
 }

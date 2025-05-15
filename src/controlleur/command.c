@@ -457,10 +457,9 @@ char * cmd_startFish(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int token
 char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute__((unused)), int tokenCount __attribute__((unused))){
     int count = 0;
 	printf("lll%d\n",fd);
-    poisson *fishes = getFishes(get_id_of_fd(fd), &count); 
+    poisson *fishes = getFishes(get_id_of_fd(fd), &count,fd); 
 
     if (fishes == NULL || count == 0) {
-		printf("mal zaml\n");
         return strdup("list\n");
     }
 

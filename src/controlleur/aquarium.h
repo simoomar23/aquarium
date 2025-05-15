@@ -52,7 +52,7 @@ int del_fish(char * name , int view_id);
 
 int start_fish(char * name, int view_number);
 
-poisson * getFishes(int view_id, int *count);
+poisson * getFishes(int view_id, int *count,int fd);
 
 void changeavailable(int id,int fd);
 

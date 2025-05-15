@@ -4,9 +4,9 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-
-
-
+#include "log_file.h"
+#include <errno.h>
+#include <sys/socket.h>
 struct link lnk__empty(void) {
   struct link l;
   l.head = NULL;
@@ -92,7 +92,6 @@ void update_positions(struct set *fishes ){
   printf("fishes size %d\n",fishes->size);
   for (int i=0;i<fishes->size;i++){
     if(e->poisson.status == STARTED){
-      e->poisson.coord_d = e->poisson.coord_f;
       e->poisson.coord_f = e->poisson.mobility(e->poisson.coord_f);
     }
 
@@ -100,22 +99,89 @@ void update_positions(struct set *fishes ){
   }
 }
 
-struct set * get_fishes_in_view(struct set * fishes ,int x,int y,int length,int width){
+char * fake_get_fishes(struct set * fishes , int count){
+    struct lelement *e = fishes->l->head;
+    size_t bufferSize = 2048;
+    char *result = malloc(bufferSize);
+    if (result == NULL) return NULL;
+    result[0] = '\0';
+
+    for (int i = 0; i < count; i++) {
+        char line[256];
+        //printf("this the name :::: %s\n",fishes[i].name);
+        snprintf(line, sizeof(line), "[%s at %dx%d,%dx%d,%d] ",
+                 e->poisson.name,
+                 e->poisson.coord_d.x, e->poisson.coord_d.y,
+                 e->poisson.length,e->poisson.width,0);
+
+        if (strlen(result) + strlen(line) + 1 > bufferSize) {
+            bufferSize *= 2;
+            char *newResult = realloc(result, bufferSize);
+            if (newResult == NULL) {
+                free(result);
+                return NULL;
+            }
+            result = newResult;
+        }
+
+        strcat(result, line);
+    }
+    size_t result_size = strlen(result);
+    result[result_size] = '\n';
+    result[result_size + 1] ='\0';
+    char header[] ="list ";
+
+
+    size_t finalSize = strlen(header) + strlen(result) + 1;
+    char *final = malloc(finalSize);
+    if (final == NULL) {
+        free(result);
+        return NULL;
+    }
+
+    strcpy(final, header);
+    strcat(final, result);
+    free(result);
+
+    return final;
+}
+
+struct set * get_fishes_in_view(struct set * fishes ,int x,int y,int length,int width , int fd){
 	struct lelement *e = fishes->l->head;
+  int count = 0;
+  int quick = 0;
 	struct set * fishes_in = set__empty();
 	for(int i=0;i<fishes->size;i++){
-		if(in_f(e->poisson,x,y,length,width)){
-		  //prepare(&(e->poisson));
+		int f2 = in_f(e->poisson,x,y,length,width);
+		int f1 = in_d(e->poisson,x,y,length,width);
+    printf("%d;%d , %d;%d\n",f1,f2,e->poisson.coord_d.x,e->poisson.coord_d.y);
+		if(f1 || f2){
+		  if (!f1)
+        quick = 1;
+      count++;
 			poisson poisson = e->poisson;
 			poisson.coord_f.x = ((poisson.coord_f.x -x)*HUNDRED)/length;
-      		printf("ssss %d \n",poisson.coord_f.x);
 			poisson.coord_f.y = ((poisson.coord_f.y -y)*HUNDRED)/width;
+      poisson.coord_d.x = ((poisson.coord_d.x -x)*HUNDRED)/length;
+			poisson.coord_d.y = ((poisson.coord_d.y -y)*HUNDRED)/width;
       poisson.length = (poisson.length*HUNDRED)/length;
-      poisson.width = (poisson.width*HUNDRED)/width;  
+      poisson.width = (poisson.width*HUNDRED)/width;
+      e->poisson.coord_d = e->poisson.coord_f;  
 			assert(!set__add_head(fishes_in,poisson));
+		
 		}
     e = e->next;
 	}
+  if(quick){
+    char * response = fake_get_fishes(fishes_in,count);
+    if (send(fd, response, strlen(response), 0) == -1) {
+				perror("send failed");
+				log_message(LOG_ERROR, "send failed to client %d: %s", fd, strerror(errno));
+		}
+    else {
+							log_message(LOG_DEBUG, "Response sent to client %d", fd);
+    }
+  }
 	return fishes_in;
 }
 
