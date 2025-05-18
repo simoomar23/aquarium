@@ -35,55 +35,6 @@ coord RandomPathWay(coord coordon,int x,int y){
 }
 
 
-coord movement_rectangular(coord unused,int x,int y) {
-    // Taille d'un sous-rectangle
-    const int Wc = AQUA_WIDTH  / GRID_COLS;  // 250
-    const int Hc = AQUA_HEIGHT / GRID_ROWS;  // 250
-    // Périmètre sans double-coin
-    const int P = 2*(Wc + Hc) - 4;           // 2*(250+250)-4 = 996
-
-    // Compteur de pas interne
-    static int step = 0;
-
-    // Index de la cellule [0..15]
-    int cell = (step / P) % (GRID_COLS * GRID_ROWS);
-    int col  = cell % GRID_COLS;
-    int row  = cell / GRID_COLS;
-
-    // Position le long du contour de la cellule [0..P-1]
-    int s = step % P;
-
-    // Origine (coin haut-gauche) du sous-rectangle
-    int ox = col * Wc;
-    int oy = row * Hc;
-
-    coord res;
-    if (s < Wc) {
-        // côté supérieur
-        res.x = ox + s;
-        res.y = oy;
-    }
-    else if (s < Wc + Hc - 1) {
-        // côté droit
-        res.x = ox + (Wc - 1);
-        res.y = oy + (s - Wc + 1);
-    }
-    else if (s < 2*Wc + Hc - 2) {
-        // côté inférieur
-        res.x = ox + (Wc - 1) - (s - (Wc + Hc - 1));
-        res.y = oy + (Hc - 1);
-    }
-    else {
-        // côté gauche
-        res.x = ox;
-        res.y = oy + (Hc - 1) - (s - (2*Wc + Hc - 2));
-    }
-
-    // Incrémente le pas pour le prochain appel
-    step++;
-
-    return res;
-}
 
 coord horizenal(coord coord,int x,int y){
 	

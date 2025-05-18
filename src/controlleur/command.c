@@ -11,7 +11,8 @@
 #include <errno.h>
 #include <pthread.h>
 #include "model.h"
-#define TIME 2
+
+struct array_sd get_fishes_fd_arrays;
 
 
 void cmd_load(char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount);
@@ -67,7 +68,6 @@ ClientCommand clientcommande[] = {
 };
 functions myfunc[] = {
     {"RandomWayPoint",RandomPathWay},
-    {"movement_rectangular",movement_rectangular},
     {"horizenal",horizenal}
 };
 
@@ -112,6 +112,16 @@ void handle_command(char *input) {
 
     printf("commande invalide\n");
 }
+extern void getFishes_utils();
+void * initialize_get_fishes_continuously_update_poisitions(void * dummy __attribute__ ((unused))){
+    while(1){
+        update_positions_f();
+        getFishes_utils();
+        update_positions_d();
+        sleep(TIME);
+    }
+    
+}
 
 void tokenize_load(char *c) {
     FILE *fichier;
@@ -146,6 +156,8 @@ void tokenize_load(char *c) {
     }
     fclose(fichier);
     initialize_aquarium(command_length,command_width,total_views,i-1);
+    pthread_t tid;
+    pthread_create(&tid,NULL,(void * ) initialize_get_fishes_continuously_update_poisitions,NULL);
 
     for (int j = 0; j < i; j++) {
         free(lignes[j]); 
@@ -350,7 +362,7 @@ char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute
         snprintf(line, sizeof(line), "[%s at %dx%d,%dx%d,%d] ",
                  fishes[i].name,
                  fishes[i].coord_f.x, fishes[i].coord_f.y,
-                 fishes[i].length,fishes[i].width,2);
+                 fishes[i].length,fishes[i].width,TIME);
 
         if (strlen(result) + strlen(line) + 1 > bufferSize) {
             bufferSize *= 2;
@@ -384,23 +396,37 @@ char * cmd_getFishes(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute
     return final;
 }
 
-void getFishes_utils(void *fd){
-	int sd = (intptr_t)fd;
-    while(1){
-        char * response = cmd_getFishes(sd,NULL,0);
-        if (send(sd, response, strlen(response), 0) == -1) {
-							perror("send failed");
-							log_message(LOG_ERROR, "send failed to client %d: %s", sd, strerror(errno));
+void * single_get_fish(void  * sd){
+    int fd = (__intptr_t) sd;
+    char * response = cmd_getFishes(fd,NULL,0);
+        if (send(fd, response, strlen(response), 0) == -1) {
+				perror("send failed");
+				log_message(LOG_ERROR, "send failed to client %d: %s", fd, strerror(errno));
 		} else {
-        	log_message(LOG_DEBUG, "Response sent to client %d", sd);
+        	log_message(LOG_DEBUG, "Response sent to client %d", fd);
         }
-        sleep(2);
+    return NULL;
+}
+
+void getFishes_utils(){
+    int count = get_fishes_fd_arrays.size;
+    int fd;
+    pthread_t tid[MAX_CLIENTS];
+    for(int i=0;i<count;i++){
+        if((fd = get_fishes_fd_arrays.fds[i])){
+            pthread_create(&tid[i],NULL,(void * )single_get_fish,(void *)(intptr_t) fd);
+        }
+    }
+    for(int i=0;i<count;i++){
+        if((fd = get_fishes_fd_arrays.fds[i])){
+            pthread_join(tid[i],NULL);
+        }
     }
 }
 
 void cmd_getFishesContinuously(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH]__attribute__((unused)), int tokenCount __attribute__((unused))){
-    pthread_t thread_id;
-    pthread_create(&thread_id, NULL, (void *)getFishes_utils, (void * )(intptr_t )fd);
+    get_fishes_fd_arrays.fds[get_fishes_fd_arrays.size] = fd;
+    get_fishes_fd_arrays.size++;
 }
 
 char* cmd_log(int fd,char tokens[MAX_TOKENS][MAX_TOKEN_LENGTH], int tokenCount){

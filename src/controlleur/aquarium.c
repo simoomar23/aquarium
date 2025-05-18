@@ -11,12 +11,27 @@ aquarium * my_aquarium;
 
 views my_views;
 
+void update_positions_f( ){
+  struct lelement *e = my_aquarium->fishs->l->head;
+  for (int i=0;i<my_aquarium->fishs->size;i++){
+    if(e->poisson.status == STARTED){
+      e->poisson.coord_f = e->poisson.mobility(e->poisson.coord_f,e->poisson.length,e->poisson.width);
+      
+    }
 
-void update_positions_continously(void){
-	while(1){
-		update_positions(my_aquarium->fishs);
-		sleep(2);
-	}
+    e = e->next;
+  }
+}
+void update_positions_d(){
+  struct lelement *e = my_aquarium->fishs->l->head;
+  for (int i=0;i<my_aquarium->fishs->size;i++){
+    if(e->poisson.status == STARTED){
+      e->poisson.coord_d = e->poisson.coord_f;
+      
+    }
+
+    e = e->next;
+  }
 }
 
 void initialize_aquarium(int length,int width,view all_views[],int size){
@@ -28,9 +43,7 @@ void initialize_aquarium(int length,int width,view all_views[],int size){
 	for(int i=0;i<size;i++){
 		my_views.all_views[i] = all_views[i];
 	}
-	my_views.size = size;
-	pthread_t tid;
-	pthread_create(&tid,NULL,(void*)update_positions_continously,NULL);
+	my_views.size = size;	
 }
 
 struct view make_view(int id,int x,int y,int width, int length , int available){

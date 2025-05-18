@@ -16,6 +16,8 @@
 #define MAX_CLIENTS 7
 
 
+
+
 // Function to set the socket to non-blocking mode
 int set_non_blocking(int socket) {
 	int flags = fcntl(socket, F_GETFL, 0);
@@ -74,9 +76,9 @@ int main(int argc , char * argv[]) {
    // Bind
    memset(&serverAddr, 0, sizeof(serverAddr)); // Initilalize server structure to zeros
    serverAddr.sin_family = AF_INET;
-   //serverAddr.sin_port = htons(atoi(argv[1])) ; // user provided
+   serverAddr.sin_port = htons(atoi(argv[1])) ; // user provided
    //printf("%d",get_controller_port(&config));
-   serverAddr.sin_port = htons(get_controller_port(&config));
+   //serverAddr.sin_port = htons(get_controller_port(&config));
    serverAddr.sin_addr.s_addr = INADDR_ANY;  // Bind to all available interfaces
 
 

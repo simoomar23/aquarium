@@ -3,8 +3,13 @@
 
 #include "model.h"
 #define HUNDRED 100
+#define MAX_CLIENTS 7
 //linked list
-
+struct array_sd {
+  int fds[MAX_CLIENTS];
+  int size ;
+};
+extern struct array_sd get_fishes_fd_arrays;
 struct lelement {
   poisson poisson; // data 
   struct lelement *next; // next element
@@ -55,6 +60,6 @@ void free_set(struct set *s) ;
 /*prints s set*/
 void set_print(struct set *s,char*prefix);
 
-void update_positions(struct set *fishes);
+
 
 #endif

@@ -29,6 +29,9 @@ typedef struct views {
 	int size;
 }views;
 
+void update_positions_f();
+
+void update_positions_d();
 
 void initialize_aquarium(int length,int width,view all_views[],int size);
  
